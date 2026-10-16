@@ -17,7 +17,7 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "test": "node --experimental-strip-types --test test/infra-beatbox.test.ts",
+    "test": "node --experimental-strip-types --test test/*.test.ts",
     "demo": "esbuild demo/main.ts --bundle --format=esm --outdir=demo --servedir=demo --serve=8000"
   },
   "devDependencies": {

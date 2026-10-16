@@ -20,6 +20,9 @@ A prototype, for a page in the Sandbox of [bsulkowski.pl](https://bsulkowski.pl)
 Each voice is drawn as a dot circling its cell once a period; the note sounds as the dot passes
 the mark at the top.
 
+The page has ready-made patterns (a heartbeat, an arpeggio in one rhythm, a chord as a
+polyrhythm, a canon at two speeds, a pendulum wave …) and a button for random ones.
+
 Two tunings: equal temperament, and just intonation, where the scale steps are whole-number
 ratios (9/8, 5/4, 4/3, 3/2 …). In just intonation polyrhythms repeat exactly: C, E and G in the
 rhythms of their own notes are 4 : 5 : 6 and line up every four periods of C. In equal temperament
@@ -29,6 +32,7 @@ they drift apart slowly and come back after minutes.
 
 - `src/infra-beatbox.ts`: the scale, the rhythms and the timing of voices. Pure functions,
   no DOM or audio.
+- `src/examples.ts`: the ready-made patterns and the random one.
 - `src/player.ts`: plays the voices through Web Audio, with notes booked ahead on the audio
   clock and a synthesised tone.
 - `demo/`: the prototype page.

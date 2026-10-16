@@ -8,15 +8,19 @@
 // a marimba and a music box. No samples to load.
 
 import {
-  pitchFrequency, rhythmFrequency, hitTimes, phaseAt, retunedPhase,
+  pitchFrequency, rhythmFrequency, hitTimes, phaseAt, phaseFor, retunedPhase,
   type Tuning, type Voice,
 } from './infra-beatbox.ts';
+import type { PatternVoice } from './examples.ts';
 
 const LOOKAHEAD = 0.15;   // s booked ahead of the clock
 const TICK = 0.025;       // s between bookings
 const START_DELAY = 0.01; // s from a click to the first hit, so it is never booked in the past
 const DECAY = 0.9;        // s for a note to fade out
 const PEAK = 0.16;        // gain of one note at its loudest
+// A new voice is booked from a hair before its first hit: computed back from the phase,
+// that hit can come out an ulp early, and would be taken for one of the window before.
+const EPSILON = 1e-6;
 
 interface Booked { node: OscillatorNode; time: number }
 interface PlayedVoice extends Voice { booked: Set<Booked> }
@@ -95,9 +99,23 @@ export class Player {
     const to = Math.max(this.bookedUntil, this.ctx.currentTime + LOOKAHEAD);
     for (const v of this.voices) this.bookVoice(v, this.bookedUntil, to);
     this.bookedUntil = to;
-    this.bookVoice(voice, t, to);
+    this.bookVoice(voice, t - EPSILON, to);
     this.voices.push(voice);
     return { pitch, rhythm, phase: voice.phase };
+  }
+
+  /** Replaces all voices with a pattern, starting together a moment from now. */
+  load(pattern: PatternVoice[]): void {
+    this.clearAll();
+    const start = this.ctx.currentTime + START_DELAY;
+    const to = Math.max(this.bookedUntil, this.ctx.currentTime + LOOKAHEAD);
+    for (const { pitch, rhythm, offset = 0 } of pattern) {
+      const f = rhythmFrequency(rhythm, this.tuning);
+      const voice: PlayedVoice = { pitch, rhythm, phase: phaseFor(start, f, offset), booked: new Set() };
+      this.bookVoice(voice, start - EPSILON, to);
+      this.voices.push(voice);
+    }
+    this.bookedUntil = to;
   }
 
   /** Removes every voice of a cell, notes already booked included. */

@@ -9,6 +9,7 @@ import {
   type Tuning, type GridSize,
 } from '../src/infra-beatbox.ts';
 import { Player } from '../src/player.ts';
+import { EXAMPLES, randomPattern, type PatternVoice } from '../src/examples.ts';
 
 const SVG = 'http://www.w3.org/2000/svg';
 const R = 36;                 // radius of the orbit, in a 100 × 100 cell
@@ -205,38 +206,81 @@ function press(group: string, attr: string, value: string): void {
   }
 }
 
+function setSize(n: GridSize): void {
+  size = n;
+  for (const v of player.list()) if (v.pitch >= size || v.rhythm >= size) player.clear(v.pitch, v.rhythm);
+  press('size-label', 'size', String(size));
+  build();
+}
+
+function setTuning(tuning: Tuning): void {
+  player.setTuning(tuning);
+  press('tuning-label', 'tuning', tuning);
+  build();
+}
+
 for (const b of document.querySelectorAll<HTMLButtonElement>('[data-size]')) {
-  b.addEventListener('click', () => {
-    size = Number(b.dataset.size) as GridSize;
-    for (const v of player.list()) if (v.pitch >= size || v.rhythm >= size) player.clear(v.pitch, v.rhythm);
-    press('size-label', 'size', String(size));
-    build();
-  });
+  b.addEventListener('click', () => setSize(Number(b.dataset.size) as GridSize));
 }
 
 for (const b of document.querySelectorAll<HTMLButtonElement>('[data-tuning]')) {
-  b.addEventListener('click', () => {
-    player.setTuning(b.dataset.tuning as Tuning);
-    press('tuning-label', 'tuning', b.dataset.tuning!);
-    build();
-  });
+  b.addEventListener('click', () => setTuning(b.dataset.tuning as Tuning));
 }
 
 (document.getElementById('volume') as HTMLInputElement).addEventListener('input', e => {
   player.setVolume(Number((e.target as HTMLInputElement).value));
 });
 
-document.getElementById('clear-all')!.addEventListener('click', () => {
-  player.clearAll();
+const exampleSelect = document.getElementById('example') as HTMLSelectElement;
+const exampleNote = document.getElementById('example-note') as HTMLParagraphElement;
+const exampleTitle = document.getElementById('example-title') as HTMLElement;
+const exampleText = document.getElementById('example-text') as HTMLElement;
+
+for (const n of [8, 15]) {
+  const group = document.createElement('optgroup');
+  group.label = `Siatka ${n} × ${n}`;
+  for (const e of EXAMPLES.filter(x => x.size === n)) {
+    const option = document.createElement('option');
+    option.value = e.id;
+    option.textContent = e.title.pl;
+    group.append(option);
+  }
+  exampleSelect.append(group);
+}
+
+function describe(title: string, text: string): void {
+  exampleTitle.textContent = `${title}.`;
+  exampleText.textContent = text;
+  exampleNote.hidden = false;
+}
+
+async function play(pattern: PatternVoice[]): Promise<void> {
+  await ensureAudio();
+  player.load(pattern);
   refreshAll();
+}
+
+exampleSelect.addEventListener('change', async () => {
+  const e = EXAMPLES.find(x => x.id === exampleSelect.value);
+  if (!e) return;
+  // A larger grid when the example needs it; a smaller one is left as it is.
+  if (e.size > size) setSize(e.size);
+  if (e.tuning) setTuning(e.tuning);
+  describe(e.title.pl, e.description.pl);
+  await play(e.voices);
 });
 
-// C, E and G, each in the rhythm of its own note: 4 : 5 : 6, a chord played as a polyrhythm.
-// In just tuning the pattern comes back exactly every four seconds.
-document.getElementById('example')!.addEventListener('click', async () => {
-  await ensureAudio();
+document.getElementById('random')!.addEventListener('click', async () => {
+  exampleSelect.value = '';
+  const pattern = randomPattern(size);
+  describe('Losowy wzór', `${pattern.length} głosów na nutach pentatoniki C–D–E–G–A, w wolniejszych rytmach, w prostych ułamkach okresu. Losuj dalej albo dopisuj własne głosy.`);
+  await play(pattern);
+});
+
+document.getElementById('clear-all')!.addEventListener('click', () => {
   player.clearAll();
-  for (const step of [0, 2, 4]) player.add(step, step);
+  exampleSelect.value = '';
+  exampleNote.hidden = true;
   refreshAll();
 });
 

@@ -68,6 +68,11 @@ export function phaseAt(t: number, f: number): number {
   return frac(t * f);
 }
 
+/** The phase of a voice of rhythm frequency `f` that first sounds `offset` cycles after `start`. */
+export function phaseFor(start: number, f: number, offset: number): number {
+  return frac(start * f + offset);
+}
+
 /**
  * Where a voice is in its cycle at time `t`, as a fraction: 0 when it sounds, rising to 1
  * just before it sounds again. Divided by `f`, it is the time since it last sounded.

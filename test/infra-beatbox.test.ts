@@ -35,9 +35,9 @@ test('just intonation makes rhythms whole-number ratios: polyrhythms that repeat
   close(stepRatio(4, 'just'), 3 / 2);  // C : G = 2 : 3
   close(stepRatio(2, 'just'), 5 / 4);  // C : E = 4 : 5
   // In equal temperament G is a hair flat of 3/2, so C against G drifts: a full slip
-  // of one beat takes about four and a half minutes.
+  // of one beat takes just under five minutes.
   const slip = 1 / Math.abs(3 * rhythmFrequency(0, 'equal') - 2 * rhythmFrequency(4, 'equal'));
-  assert.ok(slip > 250 && slip < 300, `${slip}`);
+  assert.ok(slip > 280 && slip < 300, `${slip}`);
 });
 
 test('a voice sounds at the moment its phase was taken, then once per period', () => {
