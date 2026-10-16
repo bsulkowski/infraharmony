@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Infra-beatbox</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;650&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: one instrument panel — controls on top, the grid below it, pitch up the side, rhythm along the bottom. */
+:root {
+  --paper: #f2f4f6;
+  --sheet: #fbfcfd;
+  --ink: #1b2531;
+  --muted: #5b6878;
+  --rule: #d3dae2;
+  --accent: #1d5bb8;
+  --dot-l: 44%;
+  --font-display: "Exo 2", "Segoe UI", system-ui, sans-serif;
+  --font-body: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f141a; --sheet: #151c24; --ink: #e2e8ee; --muted: #8b99a8;
+    --rule: #28323d; --accent: #7aa8f5; --dot-l: 66%; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f141a; --sheet: #151c24; --ink: #e2e8ee; --muted: #8b99a8;
+  --rule: #28323d; --accent: #7aa8f5; --dot-l: 66%; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 14px/1.5 var(--font-body);
+}
+main {
+  max-width: 980px;
+  margin: 0 auto;
+  padding-block: 24px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid;
+  gap: 18px;
+}
+
+header { display: grid; gap: 4px; }
+h1 {
+  margin: 0;
+  font: 650 1.9rem/1.1 var(--font-display);
+  letter-spacing: 0.01em;
+  text-wrap: balance;
+}
+h1 small { font-weight: 500; color: var(--muted); font-size: 0.55em; letter-spacing: 0.08em; text-transform: uppercase; margin-left: 0.4em; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+
+.panel {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px;
+  padding-block: 10px;
+  border-block: 1px solid var(--rule);
+}
+.field { display: flex; align-items: center; gap: 8px; }
+.label { font: 500 0.72rem/1 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; }
+.seg button {
+  font: 500 0.85rem/1 var(--font-body); color: var(--ink);
+  background: var(--sheet); border: 0; padding: 7px 11px; cursor: pointer;
+}
+.seg button + button { border-left: 1px solid var(--rule); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--sheet); }
+.btn {
+  font: 500 0.85rem/1 var(--font-body); color: var(--ink);
+  background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px;
+  padding: 7px 12px; cursor: pointer;
+}
+.btn:hover, .seg button:not([aria-pressed="true"]):hover { border-color: var(--accent); color: var(--accent); }
+input[type="range"] { width: 110px; accent-color: var(--accent); }
+.status { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.board { display: grid; gap: 6px; }
+.axis-title { font: 400 0.8rem/1.3 var(--font-body); color: var(--muted); }
+.axis-title b { font: 500 0.72rem/1 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); }
+.scroller { overflow-x: auto; padding-bottom: 4px; }
+.grid {
+  --n: 8;
+  --cell: clamp(26px, min(calc((min(100vw, 980px) - 2 * 16px - 64px) / var(--n) - 2px), calc((100vh - 320px) / var(--n) - 2px)), 84px);
+  display: grid;
+  grid-template-columns: 64px repeat(var(--n), var(--cell));
+  grid-template-rows: repeat(var(--n), var(--cell)) auto;
+  gap: 2px;
+  width: max-content;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.rowlabel, .collabel {
+  display: flex; flex-direction: column; justify-content: center;
+  font-variant-numeric: tabular-nums; line-height: 1.15;
+}
+.rowlabel { align-items: flex-end; padding-right: 8px; }
+.collabel { align-items: center; padding-top: 6px; height: auto; }
+.rowlabel .name, .collabel .name { font: 600 0.82rem/1.15 var(--font-display); }
+.rowlabel .hz, .collabel .hz { font-size: 0.66rem; color: var(--muted); }
+.grid[data-n="15"] .hz { font-size: 0.58rem; }
+
+.cell {
+  --flash: 0;
+  --hue: hsl(var(--h) 70% var(--dot-l));
+  position: relative;
+  padding: 0; margin: 0;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: color-mix(in oklab, var(--hue) calc(var(--flash) * 55%), var(--sheet));
+  cursor: pointer;
+  color: var(--hue);
+}
+.cell.diag { border-color: color-mix(in oklab, var(--accent) 35%, var(--rule)); }
+.cell:hover { border-color: var(--hue); }
+.cell svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.cell .track { fill: none; stroke: var(--rule); stroke-width: 3; }
+.cell .tick { stroke: var(--muted); stroke-width: 3; stroke-linecap: round; opacity: 0; }
+.cell.on .tick { opacity: 1; }
+.cell:not(.on) .track { opacity: 0; }
+.cell:hover .track { opacity: 1; }
+.cell .dot { fill: currentColor; }
+.corner { display: flex; align-items: flex-start; justify-content: flex-end; padding: 6px 8px 0 0; }
+
+.help { margin: 0; color: var(--muted); max-width: 70ch; font-size: 0.86rem; }
+.help kbd {
+  font: 600 0.75rem/1 var(--font-body); padding: 2px 5px; border-radius: 4px;
+  border: 1px solid var(--rule); background: var(--sheet); color: var(--ink);
+}
+.notice { color: var(--accent); }
+
+@media (max-width: 520px) {
+  .grid { grid-template-columns: 34px repeat(var(--n), var(--cell)); gap: 1px; --cell: clamp(19px, calc((100vw - 2 * 16px - 34px) / var(--n) - 1px), 84px); }
+  .grid[data-n="15"] .collabel .name { font-size: 0.6rem; }
+  .rowlabel .hz { display: none; }
+  .collabel .hz { display: none; }
+  .status { margin-left: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cell { transition: none; }
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Infra-beatbox <small>prototyp</small></h1>
+    <p class="lede">Wiersze to tony skali C-dur od C4. Kolumny to ta sama skala osiem oktaw niżej, gdzie częstotliwość słychać już jako puls, około jednego uderzenia na sekundę. Każda kratka łączy ton z rytmem.</p>
+  </header>
+
+  <div class="panel" role="toolbar" aria-label="Ustawienia">
+    <div class="field">
+      <span class="label" id="size-label">Siatka</span>
+      <div class="seg" role="group" aria-labelledby="size-label">
+        <button type="button" id="size-8" data-size="8" aria-pressed="true">8 × 8</button>
+        <button type="button" id="size-15" data-size="15" aria-pressed="false">15 × 15</button>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="tuning-label">Strój</span>
+      <div class="seg" role="group" aria-labelledby="tuning-label">
+        <button type="button" id="tuning-equal" data-tuning="equal" aria-pressed="true" title="Strój równomiernie temperowany, jak w fortepianie">równomierny</button>
+        <button type="button" id="tuning-just" data-tuning="just" aria-pressed="false" title="Proporcje całkowite: 9/8, 5/4, 4/3, 3/2… Polirytmy powtarzają się dokładnie">naturalny</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="label" for="volume">Głośność</label>
+      <input type="range" id="volume" min="0" max="1" step="0.01" value="0.8">
+    </div>
+    <button type="button" class="btn" id="example" title="Akord C–E–G, każdy dźwięk w rytmie swojej nuty: polirytm 4 : 5 : 6">Przykład</button>
+    <button type="button" class="btn" id="clear-all">Wyczyść wszystko</button>
+    <span class="status" id="status" aria-live="polite">Głosy: 0</span>
+  </div>
+
+  <div class="board">
+    <div class="axis-title">↑ <b>Ton</b> · C-dur od C4 (≈ 262 Hz)</div>
+    <div class="scroller">
+      <div class="grid" id="grid" data-n="8" aria-label="Siatka ton × rytm"></div>
+    </div>
+    <div class="axis-title">→ <b>Rytm</b> · ta sama skala od C−4 (≈ 1,02 Hz), uderzeń na sekundę</div>
+  </div>
+
+  <p class="help">
+    <kbd>LPM</kbd> dodaje głos: zabrzmi od razu i będzie wracał co okres swojego rytmu. Kolejne kliknięcie tej samej kratki dodaje głos w innej fazie, w chwili kliknięcia.
+    <kbd>PPM</kbd> czyści kratkę. Na ekranie dotykowym przytrzymaj kratkę. Z klawiatury: <kbd>Enter</kbd> dodaje, <kbd>Delete</kbd> czyści.
+    Kropka okrąża kratkę raz na okres i dźwięk pada, gdy mija znacznik u góry.
+    <span class="notice" id="notice">Dźwięk włączy się przy pierwszym kliknięciu.</span>
+  </p>
+</main>
+<script type="module" src="./main.js"></script>
+</body>
+</html>
