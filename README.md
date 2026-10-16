@@ -26,7 +26,7 @@ polyrhythm, a canon at two speeds, a pendulum wave …) and a button for random 
 Two tunings: equal temperament, and just intonation, where the scale steps are whole-number
 ratios (9/8, 5/4, 4/3, 3/2 …). In just intonation polyrhythms repeat exactly: C, E and G in the
 rhythms of their own notes are 4 : 5 : 6 and line up every four periods of C. In equal temperament
-they drift apart slowly and come back after minutes.
+they drift: the third comes back into line every 25 s, the fifth in just under five minutes.
 
 ## Code
 

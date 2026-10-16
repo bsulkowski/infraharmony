@@ -24,8 +24,8 @@ tempach, fala wahadeł …) i przycisk losujący nowe.
 
 Dwa stroje: równomiernie temperowany i naturalny, w którym stopnie skali są proporcjami liczb
 całkowitych (9/8, 5/4, 4/3, 3/2 …). W stroju naturalnym polirytmy powtarzają się dokładnie: C, E
-i G w rytmach swoich nut to 4 : 5 : 6 i schodzą się co cztery okresy C. W równomiernym powoli
-się rozjeżdżają i wracają po kilku minutach.
+i G w rytmach swoich nut to 4 : 5 : 6 i schodzą się co cztery okresy C. W równomiernym się
+rozjeżdżają: tercja wraca do zgody co 25 s, kwinta po niecałych pięciu minutach.
 
 ## Kod
 
