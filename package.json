@@ -1,15 +1,15 @@
 {
-  "name": "infra-beatbox",
+  "name": "infraharmony",
   "version": "0.1.0",
   "private": true,
-  "description": "A grid of tones and rhythms on one scale: the C major scale for pitch, and the same scale eight octaves lower, around 1 Hz, for rhythm.",
+  "description": "Harmony for rhythms: rhythms combined the way tones are, by carrying the C major scale eight octaves below sound, to around 1 Hz.",
   "author": "Bartosz Sułkowski (https://bsulkowski.pl)",
   "type": "module",
   "exports": {
-    ".": "./src/infra-beatbox.ts",
+    ".": "./src/infraharmony.ts",
     "./player": "./src/player.ts"
   },
-  "types": "./src/infra-beatbox.ts",
+  "types": "./src/infraharmony.ts",
   "files": [
     "src"
   ],

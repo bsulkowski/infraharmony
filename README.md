@@ -1,11 +1,21 @@
-# Infra-beatbox
+# Infraharmony
+
+*Eight octaves below sound*
 
 *Also available in Polish: [README](README_PL.md)*
+
+Harmony for rhythms. Music has long known which tones go well together: frequencies in simple
+ratios, a fifth at 3 : 2, a major chord at 4 : 5 : 6. Rhythms are frequencies too, only slower,
+so the same ratios should tell which rhythms go well together. Infraharmony carries the scale
+down to where a frequency is heard as a pulse, and lets you combine the two.
 
 A grid of tones and rhythms on one scale. The rows are the C major scale from middle C
 (C4 ≈ 262 Hz). The columns are the same scale eight octaves lower, from C−4 ≈ 1.02 Hz,
 where a frequency is no longer heard as a pitch but as a pulse. Each cell joins a tone
 with a rhythm; the cells on the diagonal play a tone exactly 256 times faster than they repeat it.
+
+A distant relative of the Rhythmicon, built by Leon Theremin for Henry Cowell in 1931, which
+played each tone of the overtone series together with a rhythm in the same ratio.
 
 A prototype, for a page in the Sandbox of [bsulkowski.pl](https://bsulkowski.pl).
 
@@ -35,7 +45,7 @@ they drift: the third comes back into line every 25 s, the fifth in just under f
 
 ## Code
 
-- `src/infra-beatbox.ts`: the scale, the rhythms and the timing of voices. Pure functions,
+- `src/infraharmony.ts`: the scale, the rhythms and the timing of voices. Pure functions,
   no DOM or audio.
 - `src/examples.ts`: the ready-made patterns and the random one.
 - `src/code.ts`: a piece as a code for a link, and back.

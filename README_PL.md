@@ -1,11 +1,22 @@
-# Infra-beatbox
+# Infraharmonia
+
+*Osiem oktaw poniżej dźwięku*
 
 *Dostępne także po angielsku: [README](README.md)*
+
+Harmonia dla rytmów. Muzyka od dawna wie, które dźwięki dobrze brzmią razem: częstotliwości
+w prostych proporcjach, kwinta 3 : 2, akord durowy 4 : 5 : 6. Rytmy też są częstotliwościami,
+tylko wolniejszymi, więc te same proporcje powinny mówić, które rytmy dobrze idą w parze.
+Infraharmonia przenosi skalę tam, gdzie częstotliwość słychać już jako puls, i pozwala łączyć jedno
+z drugim.
 
 Siatka tonów i rytmów na jednej skali. Wiersze to skala C-dur od środkowego C
 (C4 ≈ 262 Hz). Kolumny to ta sama skala osiem oktaw niżej, od C−4 ≈ 1,02 Hz, gdzie
 częstotliwości nie słychać już jako wysokości dźwięku, tylko jako puls. Każda kratka łączy ton
 z rytmem; kratki na przekątnej grają ton dokładnie 256 razy szybszy od tempa, w którym go powtarzają.
+
+Daleki krewny Rhythmiconu, instrumentu, który Lew Termen zbudował dla Henry'ego Cowella w 1931
+roku: każdy ton szeregu harmonicznego grał razem z rytmem w tej samej proporcji.
 
 Prototyp strony do Piaskownicy na [bsulkowski.pl](https://bsulkowski.pl).
 
@@ -34,7 +45,7 @@ rozjeżdżają: tercja wraca do zgody co 25 s, kwinta po niecałych pięciu minu
 
 ## Kod
 
-- `src/infra-beatbox.ts`: skala, rytmy i czas głosów. Czyste funkcje, bez DOM i dźwięku.
+- `src/infraharmony.ts`: skala, rytmy i czas głosów. Czyste funkcje, bez DOM i dźwięku.
 - `src/examples.ts`: gotowe wzory i losowanie.
 - `src/code.ts`: utwór jako kod do linku i z powrotem.
 - `src/player.ts`: odtwarza głosy przez Web Audio; nuty są planowane z wyprzedzeniem

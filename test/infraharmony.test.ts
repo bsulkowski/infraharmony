@@ -1,4 +1,4 @@
-// Infra-beatbox: scale, rhythms and the timing of voices.
+// Infraharmony: scale, rhythms and the timing of voices.
 //
 // Run: npm test.
 
@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import {
   C4, cyclePosition, hitTimes, phaseAt, pitchFrequency, pitchName, retunedPhase,
   rhythmFrequency, rhythmName, stepRatio,
-} from '../src/infra-beatbox.ts';
+} from '../src/infraharmony.ts';
 
 const close = (a: number, b: number, eps = 1e-9) => assert.ok(Math.abs(a - b) < eps, `${a} ≠ ${b}`);
 

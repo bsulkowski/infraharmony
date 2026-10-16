@@ -1,11 +1,11 @@
-// Infra-beatbox: the ready-made patterns keep the promises of their descriptions.
+// Infraharmony: the ready-made patterns keep the promises of their descriptions.
 //
 // Run: npm test.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { EXAMPLES, randomPattern } from '../src/examples.ts';
-import { cyclePosition, phaseFor, rhythmFrequency, stepRatio } from '../src/infra-beatbox.ts';
+import { cyclePosition, phaseFor, rhythmFrequency, stepRatio } from '../src/infraharmony.ts';
 
 const byId = (id: string) => EXAMPLES.find(e => e.id === id)!;
 

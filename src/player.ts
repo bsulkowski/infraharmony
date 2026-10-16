@@ -1,4 +1,4 @@
-// Infra-beatbox player: plays the voices of the grid through Web Audio.
+// Infraharmony player: plays the voices of the grid through Web Audio.
 //
 // Notes are scheduled ahead on the audio clock, never fired from timers: every TICK seconds
 // the player looks LOOKAHEAD seconds ahead and books each hit at its exact time. The tick
@@ -10,7 +10,7 @@
 import {
   pitchFrequency, rhythmFrequency, hitTimes, offsetAt, phaseAt, phaseFor, retunedPhase,
   type Tuning, type Voice,
-} from './infra-beatbox.ts';
+} from './infraharmony.ts';
 import type { PatternVoice } from './examples.ts';
 
 const LOOKAHEAD = 0.15;   // s booked ahead of the clock

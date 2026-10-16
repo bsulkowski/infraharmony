@@ -1,4 +1,4 @@
-// Infra-beatbox: a piece written as a short code, to put in a link or send in a message.
+// Infraharmony: a piece written as a short code, to put in a link or send in a message.
 //
 // A piece is the grid size, the tuning and the voices, each voice with its offset: the
 // fraction of its own cycle after the piece's start at which it first sounds. Offsets
@@ -12,7 +12,7 @@
 //
 //   1j8.AAAACAVVEAqr    just tuning, 8 × 8: C4, E4, G4 in rhythm C−4 at 0, 1/3, 2/3 of a cycle
 
-import { GRID_SIZES, type GridSize, type Tuning } from './infra-beatbox.ts';
+import { GRID_SIZES, type GridSize, type Tuning } from './infraharmony.ts';
 import type { PatternVoice } from './examples.ts';
 
 export interface Piece {

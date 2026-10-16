@@ -1,10 +1,10 @@
-// Infra-beatbox: ready-made patterns, and a generator of random ones.
+// Infraharmony: ready-made patterns, and a generator of random ones.
 //
 // A pattern lists voices by cell and by offset: the fraction of its own cycle after the
 // common start at which a voice first sounds. Offset 0 everywhere means everyone starts
 // together; offsets k/n spread n voices of one cell evenly over its period.
 
-import type { GridSize, Tuning } from './infra-beatbox.ts';
+import type { GridSize, Tuning } from './infraharmony.ts';
 
 export interface PatternVoice {
   pitch: number;    // row: scale step from C4

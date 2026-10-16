@@ -1,4 +1,4 @@
-// Infra-beatbox: pieces written as codes, and back.
+// Infraharmony: pieces written as codes, and back.
 //
 // Run: npm test.
 
@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { codeFromUrl, decodePiece, encodePiece, type Piece } from '../src/code.ts';
 import { EXAMPLES } from '../src/examples.ts';
-import { cyclePosition, offsetAt, phaseFor, rhythmFrequency } from '../src/infra-beatbox.ts';
+import { cyclePosition, offsetAt, phaseFor, rhythmFrequency } from '../src/infraharmony.ts';
 
 test('the example in the format note reads as it says', () => {
   const piece: Piece = { size: 8, tuning: 'just', voices: [0, 2, 4].map((pitch, k) => ({ pitch, rhythm: 0, offset: k / 3 })) };
@@ -59,7 +59,7 @@ test('broken codes are refused', () => {
 });
 
 test('a code is read from the fragment or the p parameter of a link', () => {
-  assert.equal(codeFromUrl('https://bsulkowski.pl/infra-beatbox#1j8.AAAACAVV'), '1j8.AAAACAVV');
-  assert.equal(codeFromUrl('https://bsulkowski.pl/infra-beatbox?p=1jf.OOAA'), '1jf.OOAA');
-  assert.equal(codeFromUrl('https://bsulkowski.pl/infra-beatbox#intro'), null);
+  assert.equal(codeFromUrl('https://bsulkowski.pl/infraharmony#1j8.AAAACAVV'), '1j8.AAAACAVV');
+  assert.equal(codeFromUrl('https://bsulkowski.pl/infraharmony?p=1jf.OOAA'), '1jf.OOAA');
+  assert.equal(codeFromUrl('https://bsulkowski.pl/infraharmony#intro'), null);
 });

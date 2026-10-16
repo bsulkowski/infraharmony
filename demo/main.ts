@@ -7,7 +7,7 @@
 import {
   pitchFrequency, rhythmFrequency, pitchName, rhythmName, cyclePosition,
   type Tuning, type GridSize,
-} from '../src/infra-beatbox.ts';
+} from '../src/infraharmony.ts';
 import { Player } from '../src/player.ts';
 import { EXAMPLES, randomPattern, type PatternVoice } from '../src/examples.ts';
 import { codeFromUrl, decodePiece, encodePiece, type Piece } from '../src/code.ts';

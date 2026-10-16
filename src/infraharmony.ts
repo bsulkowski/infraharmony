@@ -1,4 +1,4 @@
-// Infra-beatbox: tones on one scale, rhythms on the same scale eight octaves lower.
+// Infraharmony: tones on one scale, rhythms on the same scale eight octaves lower.
 //
 // A cell of the grid joins a pitch (rows) with a rhythm (columns). Both are steps of the
 // C major scale counted from C: the pitch from middle C (C4 ≈ 262 Hz), the rhythm from
