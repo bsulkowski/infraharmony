@@ -19,8 +19,13 @@ Prototyp strony do Piaskownicy na [bsulkowski.pl](https://bsulkowski.pl).
 
 Każdy głos to kropka okrążająca kratkę raz na okres; dźwięk pada, gdy mija znacznik u góry.
 
-Strona ma gotowe wzory (serce, arpeggio w jednym rytmie, akord jako polirytm, kanon w dwóch
-tempach, fala wahadeł …) i przycisk losujący nowe.
+Strona ma gotowe wzory (serce, arpeggio w jednym rytmie, akord jako polirytm, kanony z jedną
+melodią w kilku tempach, fala wahadeł …) i przycisk losujący nowe, z pentatoniki i w tonie,
+i w rytmie.
+
+Utwór można wysłać jako krótki kod, który stoi w adresie strony po `#` i w polu na stronie:
+`1j8.AAAACAVVEAqr` to C4, E4 i G4 w rytmie C−4, co trzecią część okresu, w stroju naturalnym.
+Format jest opisany w `src/code.ts`.
 
 Dwa stroje: równomiernie temperowany i naturalny, w którym stopnie skali są proporcjami liczb
 całkowitych (9/8, 5/4, 4/3, 3/2 …). W stroju naturalnym polirytmy powtarzają się dokładnie: C, E
@@ -31,6 +36,7 @@ rozjeżdżają: tercja wraca do zgody co 25 s, kwinta po niecałych pięciu minu
 
 - `src/infra-beatbox.ts`: skala, rytmy i czas głosów. Czyste funkcje, bez DOM i dźwięku.
 - `src/examples.ts`: gotowe wzory i losowanie.
+- `src/code.ts`: utwór jako kod do linku i z powrotem.
 - `src/player.ts`: odtwarza głosy przez Web Audio; nuty są planowane z wyprzedzeniem
   na zegarze audio, dźwięk jest syntezowany.
 - `demo/`: strona prototypu.

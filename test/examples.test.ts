@@ -50,6 +50,15 @@ test('the chord meets every four periods of C, the canon every two', () => {
   assert.ok(Math.abs(commonPeriod([0, 4]) - 2 * tC) < 1e-9);
 });
 
+test('each canon comes back whole after as many periods of C as its description says', () => {
+  const tC = 1 / rhythmFrequency(0, 'just');
+  const promised: Record<string, number> = { canon: 2, 'canon-34': 3, 'canon-456': 4, 'canon-8910': 8, 'canon-augmentation': 1 };
+  for (const [id, periods] of Object.entries(promised)) {
+    const rhythms = [...new Set(byId(id).voices.map(v => v.rhythm))];
+    assert.ok(Math.abs(commonPeriod(rhythms) - periods * tC) < 1e-9, id);
+  }
+});
+
 test('both pendulum waves come back together after 23.5 s', () => {
   for (const id of ['pendulums', 'pendulums-15']) {
     const p = commonPeriod(byId(id).voices.map(v => v.rhythm));
@@ -65,7 +74,7 @@ test('in equal tuning the third slips a beat every 25 s, the fifth just under 5 
   assert.ok(fifth > 280 && fifth < 300, `${fifth}`);
 });
 
-test('random patterns are pentatonic, in the slower columns, and repeat with the same seed', () => {
+test('random patterns are pentatonic in tone and rhythm, in the slower columns, and repeat with the same seed', () => {
   const seeded = (seed: number) => () => ((seed = (seed * 1103515245 + 12345) % 2 ** 31) / 2 ** 31);
   for (const size of [8, 15] as const) {
     for (let s = 1; s <= 50; s++) {
@@ -73,7 +82,7 @@ test('random patterns are pentatonic, in the slower columns, and repeat with the
       assert.ok(p.length >= 4 && p.length <= (size === 8 ? 7 : 9));
       for (const v of p) {
         assert.ok([0, 1, 2, 4, 5].includes(v.pitch % 7) && v.pitch < size);
-        assert.ok(v.rhythm < Math.ceil(size / 2) + 1);
+        assert.ok([0, 1, 2, 4, 5].includes(v.rhythm % 7) && v.rhythm < (size === 8 ? 6 : 10));
       }
       assert.deepEqual(p, randomPattern(size, seeded(s)));
     }

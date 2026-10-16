@@ -8,7 +8,7 @@
 // a marimba and a music box. No samples to load.
 
 import {
-  pitchFrequency, rhythmFrequency, hitTimes, phaseAt, phaseFor, retunedPhase,
+  pitchFrequency, rhythmFrequency, hitTimes, offsetAt, phaseAt, phaseFor, retunedPhase,
   type Tuning, type Voice,
 } from './infra-beatbox.ts';
 import type { PatternVoice } from './examples.ts';
@@ -102,6 +102,13 @@ export class Player {
     this.bookVoice(voice, t - EPSILON, to);
     this.voices.push(voice);
     return { pitch, rhythm, phase: voice.phase };
+  }
+
+  /** The voices as a pattern, with offsets measured from now: what load() takes back. */
+  pattern(): PatternVoice[] {
+    const now = this.ctx.currentTime;
+    return this.voices.map(({ pitch, rhythm, phase }) =>
+      ({ pitch, rhythm, offset: offsetAt(now, rhythmFrequency(rhythm, this.tuning), phase) }));
   }
 
   /** Replaces all voices with a pattern, starting together a moment from now. */

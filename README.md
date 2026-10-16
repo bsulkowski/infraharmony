@@ -21,7 +21,12 @@ Each voice is drawn as a dot circling its cell once a period; the note sounds as
 the mark at the top.
 
 The page has ready-made patterns (a heartbeat, an arpeggio in one rhythm, a chord as a
-polyrhythm, a canon at two speeds, a pendulum wave …) and a button for random ones.
+polyrhythm, canons with one tune at several speeds, a pendulum wave …) and a button for random
+ones, pentatonic in both tone and rhythm.
+
+A piece can be sent as a short code, kept in the page address after `#` and in a field on the
+page: `1j8.AAAACAVVEAqr` is C4, E4 and G4 in rhythm C−4, a third of a period apart, in just
+tuning. The format is described in `src/code.ts`.
 
 Two tunings: equal temperament, and just intonation, where the scale steps are whole-number
 ratios (9/8, 5/4, 4/3, 3/2 …). In just intonation polyrhythms repeat exactly: C, E and G in the
@@ -33,6 +38,7 @@ they drift: the third comes back into line every 25 s, the fifth in just under f
 - `src/infra-beatbox.ts`: the scale, the rhythms and the timing of voices. Pure functions,
   no DOM or audio.
 - `src/examples.ts`: the ready-made patterns and the random one.
+- `src/code.ts`: a piece as a code for a link, and back.
 - `src/player.ts`: plays the voices through Web Audio, with notes booked ahead on the audio
   clock and a synthesised tone.
 - `demo/`: the prototype page.

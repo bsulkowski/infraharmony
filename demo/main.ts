@@ -10,6 +10,7 @@ import {
 } from '../src/infra-beatbox.ts';
 import { Player } from '../src/player.ts';
 import { EXAMPLES, randomPattern, type PatternVoice } from '../src/examples.ts';
+import { codeFromUrl, decodePiece, encodePiece, type Piece } from '../src/code.ts';
 
 const SVG = 'http://www.w3.org/2000/svg';
 const R = 36;                 // radius of the orbit, in a 100 × 100 cell
@@ -107,6 +108,7 @@ function refreshAll(): void {
   }
   const total = player.list().length;
   status.textContent = `Głosy: ${total}`;
+  updateCode();
 }
 
 function frame(): void {
@@ -137,9 +139,19 @@ function frame(): void {
   for (const [k, g] of flash) cells.get(k)!.el.style.setProperty('--flash', g.toFixed(3));
 }
 
+// A piece from a link waits here for the first click: browsers allow no sound before it.
+let pending: Piece | null = null;
+
 async function ensureAudio(): Promise<void> {
   await player.start();
   notice.hidden = true;
+  if (pending) {
+    const { voices } = pending;
+    pending = null;
+    examplePlay.hidden = true;
+    player.load(voices);
+    refreshAll();
+  }
 }
 
 async function addVoice(pitch: number, rhythm: number): Promise<void> {
@@ -235,6 +247,7 @@ const exampleSelect = document.getElementById('example') as HTMLSelectElement;
 const exampleNote = document.getElementById('example-note') as HTMLParagraphElement;
 const exampleTitle = document.getElementById('example-title') as HTMLElement;
 const exampleText = document.getElementById('example-text') as HTMLElement;
+const examplePlay = document.getElementById('example-play') as HTMLButtonElement;
 
 for (const n of [8, 15]) {
   const group = document.createElement('optgroup');
@@ -273,16 +286,105 @@ exampleSelect.addEventListener('change', async () => {
 document.getElementById('random')!.addEventListener('click', async () => {
   exampleSelect.value = '';
   const pattern = randomPattern(size);
-  describe('Losowy wzór', `${pattern.length} głosów na nutach pentatoniki C–D–E–G–A, w wolniejszych rytmach, w prostych ułamkach okresu. Losuj dalej albo dopisuj własne głosy.`);
+  describe('Losowy wzór', `${voicesWord(pattern.length)} na nutach pentatoniki C–D–E–G–A, w rytmach z tej samej pentatoniki, w prostych ułamkach okresu. Losuj dalej albo dopisuj własne głosy.`);
   await play(pattern);
+});
+
+// Sharing: the piece as a code, kept in the address and in the field.
+
+const codeInput = document.getElementById('code') as HTMLInputElement;
+const shareMsg = document.getElementById('share-msg') as HTMLSpanElement;
+const framed = (() => { try { return window.self !== window.top; } catch { return true; } })();
+
+function voicesWord(n: number): string {
+  const few = n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14);
+  return `${n} ${n === 1 ? 'głos' : few ? 'głosy' : 'głosów'}`;
+}
+
+function currentPiece(): Piece {
+  return pending ?? { size, tuning: player.currentTuning, voices: player.pattern() };
+}
+
+function updateCode(): void {
+  const piece = currentPiece();
+  const code = piece.voices.length ? encodePiece(piece) : '';
+  if (document.activeElement !== codeInput) codeInput.value = code;
+  try {
+    history.replaceState(null, '', code ? `#${code}` : location.pathname + location.search);
+  } catch { /* an address that cannot change: the field still has the code */ }
+}
+
+function say(text: string, error = false): void {
+  shareMsg.textContent = text;
+  shareMsg.classList.toggle('error', error);
+}
+
+/** Puts a piece on the grid: playing at once if sound is on, else waiting for a click. */
+async function openPiece(piece: Piece, title: string): Promise<void> {
+  exampleSelect.value = '';
+  setSize(piece.size);
+  setTuning(piece.tuning);
+  const n = voicesWord(piece.voices.length);
+  if (player.running) {
+    describe(title, `${n}.`);
+    await play(piece.voices);
+  } else {
+    pending = piece;
+    describe(title, `Gotowe do odtworzenia: ${n}.`);
+    examplePlay.hidden = false;
+    refreshAll();
+  }
+}
+
+examplePlay.addEventListener('click', () => void ensureAudio());
+
+document.getElementById('copy')!.addEventListener('click', () => {
+  const piece = currentPiece();
+  if (!piece.voices.length) { say('Siatka jest pusta, nie ma czego kopiować.', true); return; }
+  const code = encodePiece(piece);
+  codeInput.value = code;
+  // On a page of its own the address is the link; inside a frame its address is not
+  // one anybody else can open, so the code goes alone.
+  const link = framed ? null : location.origin + location.pathname + location.search + '#' + code;
+  navigator.clipboard.writeText(link ?? code).then(
+    () => say(link ? 'Skopiowano link.' : 'Skopiowano kod.'),
+    () => { codeInput.select(); say('Kod zaznaczony: skopiuj go skrótem Ctrl+C.'); },
+  );
+});
+
+function loadFromField(): void {
+  const text = codeInput.value.trim();
+  let code = text;
+  if (/^https?:\/\//.test(text)) {
+    try { code = codeFromUrl(text) ?? ''; } catch { code = ''; }
+  }
+  const piece = decodePiece(code);
+  if (!piece) { say('To nie jest kod utworu. Kod zaczyna się od 1e8. albo 1j8. (1ef. i 1jf. dla siatki 15 × 15).', true); return; }
+  say('');
+  codeInput.blur();
+  void openPiece(piece, 'Utwór z kodu');
+}
+
+document.getElementById('load-code')!.addEventListener('click', loadFromField);
+codeInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); loadFromField(); } });
+
+window.addEventListener('hashchange', () => {
+  const code = codeFromUrl(location.href);
+  const piece = code && decodePiece(code);
+  if (piece && code !== encodePiece(currentPiece())) void openPiece(piece, 'Utwór z linku');
 });
 
 document.getElementById('clear-all')!.addEventListener('click', () => {
   player.clearAll();
+  pending = null;
+  examplePlay.hidden = true;
   exampleSelect.value = '';
   exampleNote.hidden = true;
   refreshAll();
 });
 
+// Read the address before the first drawing, which writes the (empty) grid's code into it.
+const linked = decodePiece(codeFromUrl(location.href) ?? '');
 build();
+if (linked) void openPiece(linked, 'Utwór z linku');
 requestAnimationFrame(frame);

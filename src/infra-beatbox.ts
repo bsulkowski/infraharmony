@@ -81,6 +81,15 @@ export function cyclePosition(t: number, f: number, phase: number): number {
   return frac(t * f - phase);
 }
 
+/**
+ * How far into its cycle after time `t` a voice next sounds, as a fraction: 0 if it sounds at
+ * `t`. The inverse of phaseFor: a voice saved with this offset at `t` and loaded with it at
+ * any other start keeps its place against every other voice saved at the same `t`.
+ */
+export function offsetAt(t: number, f: number, phase: number): number {
+  return frac(-cyclePosition(t, f, phase));
+}
+
 /** The times in [from, to) at which a voice of rhythm frequency `f` and `phase` sounds. */
 export function hitTimes(f: number, phase: number, from: number, to: number): number[] {
   const times: number[] = [];

@@ -17,6 +17,7 @@
   --muted: #5b6878;
   --rule: #d3dae2;
   --accent: #1d5bb8;
+  --bad: #b3261e;
   --dot-l: 44%;
   --font-display: "Exo 2", "Segoe UI", system-ui, sans-serif;
   --font-body: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -24,12 +25,12 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --paper: #0f141a; --sheet: #151c24; --ink: #e2e8ee; --muted: #8b99a8;
-    --rule: #28323d; --accent: #7aa8f5; --dot-l: 66%; color-scheme: dark;
+    --rule: #28323d; --accent: #7aa8f5; --bad: #f08a80; --dot-l: 66%; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --paper: #0f141a; --sheet: #151c24; --ink: #e2e8ee; --muted: #8b99a8;
-  --rule: #28323d; --accent: #7aa8f5; --dot-l: 66%; color-scheme: dark;
+  --rule: #28323d; --accent: #7aa8f5; --bad: #f08a80; --dot-l: 66%; color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -144,6 +145,19 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 .cell .dot { fill: currentColor; }
 .corner { display: flex; align-items: flex-start; justify-content: flex-end; padding: 6px 8px 0 0; }
 
+.share { display: grid; gap: 6px; padding-block: 12px; border-block: 1px solid var(--rule); }
+.share-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+#code {
+  flex: 1 1 16rem; min-width: 0;
+  font: 500 0.85rem/1.2 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color: var(--ink); background: var(--sheet);
+  border: 1px solid var(--rule); border-radius: 6px; padding: 7px 9px;
+}
+#code:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.share-msg { color: var(--accent); font-size: 0.85rem; }
+.share-msg.error { color: var(--bad); }
+.share-hint { margin: 0; color: var(--muted); font-size: 0.82rem; max-width: 72ch; }
+.btn.inline { margin-left: 6px; padding: 4px 10px; vertical-align: baseline; }
 .help { margin: 0; color: var(--muted); max-width: 70ch; font-size: 0.86rem; }
 .help kbd {
   font: 600 0.75rem/1 var(--font-body); padding: 2px 5px; border-radius: 4px;
@@ -202,6 +216,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 
   <p class="example-note" id="example-note" aria-live="polite" hidden>
     <b id="example-title"></b> <span id="example-text"></span>
+    <button type="button" class="btn inline" id="example-play" hidden>Odtwórz</button>
   </p>
 
   <div class="board">
@@ -211,6 +226,17 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
     </div>
     <div class="axis-title">→ <b>Rytm</b> · ta sama skala od C−4 (≈ 1,02 Hz), uderzeń na sekundę</div>
   </div>
+
+  <section class="share" aria-labelledby="share-label">
+    <div class="share-row">
+      <label class="label" id="share-label" for="code">Kod utworu</label>
+      <input type="text" id="code" spellcheck="false" autocomplete="off" placeholder="np. 1j8.AAAACAVVEAqr">
+      <button type="button" class="btn" id="copy">Kopiuj</button>
+      <button type="button" class="btn" id="load-code">Wczytaj</button>
+      <span class="share-msg" id="share-msg" aria-live="polite"></span>
+    </div>
+    <p class="share-hint">Kod zapisuje wszystkie głosy razem z fazami, a do tego siatkę i strój. Ten sam kod stoi w adresie strony po znaku #, więc wystarczy wysłać link. Kod od kogoś wklej w pole i wczytaj.</p>
+  </section>
 
   <p class="help">
     <kbd>LPM</kbd> dodaje głos: zabrzmi od razu i będzie wracał co okres swojego rytmu. Kolejne kliknięcie tej samej kratki dodaje głos w innej fazie, w chwili kliknięcia.
