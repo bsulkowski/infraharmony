@@ -142,3 +142,15 @@ test('Borderland examples keep the promises of their descriptions', () => {
   assert.ok(c.every(v => v.rhythm === 0) && Math.abs(beat(7) - 2 * beat(0)) < 1e-9);
   assert.ok(Math.abs(beat(7) - 8.18) < 0.01);
 });
+
+test('two rhythms a semitone apart merge and fall in between each other at their difference', () => {
+  const just = (r: number, layout: 'infra' | 'border') => rhythmFrequency(r, 'just', layout);
+  const [a, b] = byId('phasing').voices.map(v => just(v.rhythm, 'infra'));
+  assert.ok(Math.abs(b / a - 16 / 15) < 1e-9);
+  assert.ok(Math.abs(1 / (b - a) - 7.83) < 0.01);       // together again after 7.8 s
+  assert.ok(a + b > 3.9 && a + b < 4);                   // in between: nearly four a second
+  const [c, d] = byId('border-phasing').voices.map(v => just(v.rhythm, 'border'));
+  assert.ok(Math.abs(d / c - 16 / 15) < 1e-9);
+  assert.ok(Math.abs(d - c - 1.02) < 0.01);              // once a second
+  assert.ok(Math.abs(c + d - 31.7) < 0.05);              // about 32 strikes a second in between
+});

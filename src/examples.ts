@@ -303,6 +303,18 @@ export const EXAMPLES: Example[] = [
     size: 15,
     voices: [0, 7, 14].map(s => ({ pitch: s, rhythm: s })),
   },
+  {
+    id: 'phasing',
+    group: 'other',
+    title: { pl: 'Dwa rytmy o półton', en: 'Two rhythms a semitone apart' },
+    description: {
+      pl: 'Jeden ton, C4, w rytmach H i C, które dzieli półton: 15 uderzeń na 16. Zaczynają razem, potem jeden ucieka drugiemu i w połowie drogi uderzenia wypadają między sobą, gęściej, prawie cztery na sekundę, aż po 7,8 s znów zejdą się w jedno. Tak dudnią rytmy: zamiast głośności faluje gęstość. Na tym przesuwaniu się dwóch bliskich temp Steve Reich zbudował Piano Phase (1967).',
+      en: 'One tone, C4, in the rhythms of B and C, a semitone apart: 15 strikes against 16. They start together, then one pulls away, and halfway the strikes fall in between each other, denser, nearly four a second, until after 7.8 s they merge again. This is how rhythms beat: instead of loudness, the density swells. Steve Reich built Piano Phase (1967) on two close tempos sliding past each other like this.',
+    },
+    size: 8,
+    tuning: 'just',
+    voices: [{ pitch: 0, rhythm: 6 }, { pitch: 0, rhythm: 7 }],
+  },
   // The Borderland: tones from C2 (row 0) down to C0 (row 14), rhythms from C−2 (column 0) up
   // to C0 (column 14). C1 is row 7, D1 row 6, E1 row 5, G1 row 3; C−1 is column 7, E−1 9, G−1 11.
   {
@@ -330,6 +342,19 @@ export const EXAMPLES: Example[] = [
     layout: 'border',
     tuning: 'just',
     voices: [0, 1, 2, 3].map(k => ({ pitch: 0, rhythm: 14, offset: k / 4 })),
+  },
+  {
+    id: 'border-phasing',
+    group: 'border',
+    title: { pl: 'Rytmy o półton, które wpadają w ton', en: 'Rhythms a semitone apart, rising into a tone' },
+    description: {
+      pl: 'Ton C2 w rytmach H−1 i C0, 15,3 i 16,4 uderzenia na sekundę, o półton od siebie. Raz na sekundę uderzają razem i słychać warkot 16 na sekundę. Pół sekundy później wypadają między sobą i uderzenia przychodzą dwa razy gęściej, ok. 32 na sekundę, już tam, gdzie zaczyna się niski ton. Dwa bliskie dźwięki dudnią w dół, do różnicy; dwa bliskie rytmy co chwilę podwajają gęstość i tak przebijają się w górę.',
+      en: 'The tone C2 in rhythms B−1 and C0, 15.3 and 16.4 strikes a second, a semitone apart. Once a second they strike together, and there is a growl of 16 a second. Half a second later they fall in between each other and the strikes come twice as dense, about 32 a second, where a low tone begins. Two close sounds beat downwards, at their difference; two close rhythms keep doubling their density, and that is how they break through upwards.',
+    },
+    size: 15,
+    layout: 'border',
+    tuning: 'just',
+    voices: [{ pitch: 0, rhythm: 13 }, { pitch: 0, rhythm: 14 }],
   },
   {
     id: 'border-beats',
