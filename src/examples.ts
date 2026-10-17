@@ -142,8 +142,8 @@ export const EXAMPLES: Example[] = [
     group: 'chord',
     title: { pl: 'Akord jako polirytm', en: 'A chord as a polyrhythm' },
     description: {
-      pl: 'C, E i G, każdy w rytmie swojej nuty: 4 : 5 : 6, jak w samym akordzie. Zbiegają się co cztery okresy C, prawie co 4 s.',
-      en: 'C, E and G, each in the rhythm of its own note: 4 : 5 : 6, as in the chord itself. They meet every four periods of C, almost 4 s.',
+      pl: 'C, E i G, każdy w rytmie swojej nuty: 4 : 5 : 6, jak w samym akordzie. To jeden wspólny takt, prawie 4 s, podzielony naraz na 4, 5 i 6 równych części. Wszystkie trzy spotykają się na jego początku, a poza nim tylko C z G, w połowie.',
+      en: 'C, E and G, each in the rhythm of its own note: 4 : 5 : 6, as in the chord itself. It is one shared bar, almost 4 s, divided at once into 4, 5 and 6 equal parts. All three meet at its start, and apart from that only C and G, halfway.',
     },
     size: 8,
     tuning: 'just',
@@ -166,8 +166,8 @@ export const EXAMPLES: Example[] = [
     group: 'chord',
     title: { pl: 'Akord e-moll 10 : 12 : 15', en: 'E minor chord 10 : 12 : 15' },
     description: {
-      pl: 'E, G i H w rytmach swoich nut. Molowy akord ma większe liczby niż durowy 4 : 5 : 6, więc głosy schodzą się rzadziej, co dziesięć okresów E, prawie co 8 s.',
-      en: 'E, G and B in the rhythms of their own notes. A minor chord has larger numbers than the major 4 : 5 : 6, so the voices meet less often, every ten periods of E, almost 8 s.',
+      pl: 'E, G i H w rytmach swoich nut, 10 : 12 : 15: odwrócony dur. Tu nie częstotliwości, tylko okresy idą równymi krokami, 6 : 5 : 4. Zamiast wspólnego taktu dzielonego na części jest wspólny puls, H, 7,7 razy na sekundę, i trzy pętle po 6, 5 i 4 jego kroki. Pary spotykają się często, E z H pięć razy, G z H trzy, E z G dwa razy, ale cała trójka tylko raz na dziesięć okresów E, prawie co 8 s. Tak wywodził dur i moll Zarlino w XVI wieku: z harmonicznego i z arytmetycznego podziału kwinty na strunie.',
+      en: 'E, G and B in the rhythms of their own notes, 10 : 12 : 15: major turned upside down. Here not the frequencies but the periods go in equal steps, 6 : 5 : 4. Instead of a shared bar divided into parts there is a shared pulse, B, 7.7 times a second, and three loops of 6, 5 and 4 of its steps. Pairs meet often, E with B five times, G with B three, E with G twice, but all three only once in ten periods of E, almost 8 s. This is how Zarlino derived major and minor in the 16th century: from the harmonic and the arithmetic division of a fifth on a string.',
     },
     size: 8,
     tuning: 'just',
@@ -385,15 +385,28 @@ export const EXAMPLES: Example[] = [
   {
     id: 'border-chord',
     group: 'border',
-    title: { pl: 'Akord, który dudni', en: 'A chord that beats' },
+    title: { pl: 'Akord durowy, który dudni', en: 'A major chord that beats' },
     description: {
-      pl: 'C1, E1 i G1, akord C-dur, uderzany razem w rytmie C−2, cztery razy na sekundę. Tony mają się jak 4 : 5 : 6, więc sąsiednie różnią się o tyle samo, 8,18 Hz, i akord dudni z tą częstotliwością, dwa razy na każde uderzenie. To C−1, kolumna 7: brakujący bas akordu, dwie oktawy pod C1, który zamiast tonem staje się rytmem.',
-      en: 'C1, E1 and G1, a C major chord, struck together in rhythm C−2, four times a second. The tones stand as 4 : 5 : 6, so neighbours differ by the same 8.18 Hz, and the chord beats at that frequency, twice for every strike. That is C−1, column 7: the missing bass of the chord, two octaves below C1, which turns into a rhythm instead of a tone.',
+      pl: 'C1, E1 i G1, akord C-dur, uderzany 16 razy na sekundę: uderzenia zlewają się w warkot, a pod nim akord dudni równo, 8,18 razy na sekundę. Tony mają się jak 4 : 5 : 6, więc sąsiednie różnią się o tyle samo. To C−1, kolumna 7: brakujący bas akordu, dwie oktawy pod C1, który zamiast tonem staje się rytmem. Porównaj z akordem molowym obok.',
+      en: 'C1, E1 and G1, a C major chord, struck 16 times a second: the strikes blur into a growl, and under it the chord beats evenly, 8.18 times a second. The tones stand as 4 : 5 : 6, so neighbours differ by the same amount. That is C−1, column 7: the missing bass of the chord, two octaves below C1, which turns into a rhythm instead of a tone. Compare the minor chord next to it.',
     },
     size: 15,
     layout: 'border',
     tuning: 'just',
-    voices: [7, 5, 3].map(p => ({ pitch: p, rhythm: 0 })),
+    voices: [7, 5, 3].map(p => ({ pitch: p, rhythm: 14 })),
+  },
+  {
+    id: 'border-chord-minor',
+    group: 'border',
+    title: { pl: 'Akord molowy, który dudni inaczej', en: 'A minor chord that beats differently' },
+    description: {
+      pl: 'E1, G1 i H1, akord e-moll, uderzany tak samo. Tu sąsiednie tony różnią się o 8,18 i 12,26 Hz, więc akord dudni dwoma tempami naraz, a cały jego wzór wraca dopiero 4 razy na sekundę, w C−2. To dźwięk C, nie E: brakujący bas akordu molowego nie jest jego prymą. Za to wszystkie trzy tony mają wspólną harmoniczną tuż nad sobą, H3 (szóstą E, piątą G, czwartą H). Dur spaja wspólna podstawa pod spodem, moll wspólny alikwot u góry.',
+      en: 'E1, G1 and B1, an E minor chord, struck the same way. Here neighbours differ by 8.18 and 12.26 Hz, so the chord beats at two rates at once, and its whole pattern comes back only 4 times a second, at C−2. That is a C, not an E: the missing bass of a minor chord is not its root. Instead, all three tones share a harmonic just above them, B3 (the sixth of E, the fifth of G, the fourth of B). Major is held together by a shared fundamental below, minor by a shared overtone above.',
+    },
+    size: 15,
+    layout: 'border',
+    tuning: 'just',
+    voices: [5, 3, 1].map(p => ({ pitch: p, rhythm: 14 })),
   },
 ];
 

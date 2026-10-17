@@ -135,11 +135,10 @@ test('Borderland examples keep the promises of their descriptions', () => {
   assert.ok(Math.abs(d - 4.00) < 0.01, `${d}`);
   const slip = 1 / Math.abs(d - beat(a.rhythm, 'equal'));
   assert.ok(slip > 11.5 && slip < 12.5, `${slip}`);
-  // The chord: tones 4 : 5 : 6 an equal 8.18 Hz apart, which is C−1, twice the strikes' C−2.
+  // The major chord: tones 4 : 5 : 6 an equal 8.18 Hz apart, which is C−1.
   const c = byId('border-chord').voices;
   const tones = c.map(v => tone(v.pitch)).sort((x, y) => x - y);
   assert.ok(Math.abs(tones[1] - tones[0] - beat(7)) < 1e-9 && Math.abs(tones[2] - tones[1] - beat(7)) < 1e-9);
-  assert.ok(c.every(v => v.rhythm === 0) && Math.abs(beat(7) - 2 * beat(0)) < 1e-9);
   assert.ok(Math.abs(beat(7) - 8.18) < 0.01);
 });
 
@@ -154,3 +153,42 @@ test('two rhythms a semitone apart merge and fall in between each other at their
   assert.ok(Math.abs(d - c - 1.02) < 0.01);              // once a second
   assert.ok(Math.abs(c + d - 31.7) < 0.05);              // about 32 strikes a second in between
 });
+
+test('major and minor are each other turned over: equal steps in frequency, or in period', () => {
+  const ratio = (id: string) => proportion(byId(id).voices.map(v => v.rhythm));
+  assert.deepEqual(ratio('chord'), [4, 5, 6]);                  // frequencies in equal steps
+  assert.deepEqual(ratio('chord-minor'), [10, 12, 15]);         // periods 1/10 : 1/12 : 1/15 = 6 : 5 : 4
+  const periods = [10, 12, 15].map(n => 60 / n);
+  assert.deepEqual(periods, [6, 5, 4]);
+  // Pairs meet gcd(a, b) times per full cycle: major once or twice, minor two to five times.
+  const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a);
+  const pairs = (n: number[]) => [gcd(n[0], n[1]), gcd(n[0], n[2]), gcd(n[1], n[2])];
+  assert.deepEqual(pairs([4, 5, 6]), [1, 2, 1]);
+  assert.deepEqual(pairs([10, 12, 15]), [2, 5, 3]);
+  // The shared pulse of E minor is B, 7.7 a second: a step of 6, 5 and 4 for E, G and B.
+  const e = rhythmFrequency(2, 'just');
+  const pulse = 6 * e;
+  assert.ok(Math.abs(pulse - 7.66) < 0.01);
+  assert.ok(Math.abs(pulse / 5 - rhythmFrequency(4, 'just')) < 1e-9 && Math.abs(pulse / 4 - rhythmFrequency(6, 'just')) < 1e-9);
+});
+
+test('in the Borderland major beats at one rate, minor at two, with a shared overtone above', () => {
+  const tone = (s: number) => pitchFrequency(s, 'just', 'border');
+  const beat = (s: number) => rhythmFrequency(s, 'just', 'border');
+  const [e, g, b] = byId('border-chord-minor').voices.map(v => tone(v.pitch)).sort((x, y) => x - y);
+  assert.ok(Math.abs(g - e - beat(7)) < 1e-9);        // 8.18 Hz, C−1
+  assert.ok(Math.abs(b - g - beat(11)) < 1e-9);       // 12.26 Hz, G−1
+  assert.ok(Math.abs(gcdFreq([e, g, b]) - beat(0)) < 1e-9);   // the whole pattern: C−2, a C
+  assert.ok(Math.abs(6 * e - 5 * g) < 1e-9 && Math.abs(5 * g - 4 * b) < 1e-9);
+  assert.ok(Math.abs(6 * e - pitchFrequency(6, 'just') / 2) < 1e-9);   // B3, an octave under B4
+  assert.ok(byId('border-chord').voices.every(v => v.rhythm === 14));
+  assert.ok(byId('border-chord-minor').voices.every(v => v.rhythm === 14));
+});
+
+/** The largest frequency all of these are whole multiples of (just-tuned, so exact on a fine grid). */
+function gcdFreq(fs: number[]): number {
+  const unit = rhythmFrequency(0, 'just', 'border') / 120;
+  const ns = fs.map(f => Math.round(f / unit));
+  const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a);
+  return ns.reduce(gcd) * unit;
+}
