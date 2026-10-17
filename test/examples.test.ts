@@ -4,7 +4,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { EXAMPLES, randomPattern } from '../src/examples.ts';
+import { EXAMPLES, EXAMPLE_GROUPS, proportion, randomPattern } from '../src/examples.ts';
 import { cyclePosition, phaseFor, rhythmFrequency, stepRatio } from '../src/infraharmony.ts';
 
 const byId = (id: string) => EXAMPLES.find(e => e.id === id)!;
@@ -27,6 +27,30 @@ test('every example fits its grid, with ids unique and offsets within a cycle', 
       assert.ok((v.offset ?? 0) >= 0 && (v.offset ?? 0) < 1, e.id);
     }
   }
+});
+
+test('every example belongs to a group that the picker shows', () => {
+  const ids = EXAMPLE_GROUPS.map(g => g.id);
+  for (const e of EXAMPLES) assert.ok(ids.includes(e.group), e.id);
+});
+
+test('intervals run from consonant to dissonant: each takes at least as long to come round', () => {
+  const intervals = EXAMPLES.filter(e => e.group === 'interval');
+  assert.deepEqual(intervals.map(e => e.title.pl.replace(/^.* (\d+ : \d+)$/, '$1')),
+    ['1 : 2', '2 : 3', '3 : 4', '3 : 5', '4 : 5', '5 : 6', '8 : 9', '15 : 16', '32 : 45']);
+  const periods = intervals.map(e => commonPeriod(e.voices.map(v => v.rhythm)));
+  for (let i = 1; i < periods.length; i++) assert.ok(periods[i] >= periods[i - 1] - 1e-9, intervals[i].id);
+  assert.ok(Math.abs(periods.at(-1)! - 23.48) < 0.01);  // the tritone: as long as the whole scale
+});
+
+test('chords and their inversions have the ratios their titles give', () => {
+  const ratio = (id: string) => proportion(byId(id).voices.map(v => v.rhythm)).join(' : ');
+  assert.equal(ratio('chord'), '4 : 5 : 6');
+  assert.equal(ratio('chord-rhythm-only'), '4 : 5 : 6');
+  assert.equal(ratio('chord-minor'), '10 : 12 : 15');
+  assert.equal(ratio('chord-first-inversion'), '5 : 6 : 8');
+  assert.equal(ratio('chord-second-inversion'), '3 : 4 : 5');
+  assert.ok(byId('chord-rhythm-only').voices.every(v => v.pitch === 0));
 });
 
 test('a voice loaded with an offset first sounds that far into its cycle', () => {

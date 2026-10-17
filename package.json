@@ -1,9 +1,14 @@
 {
   "name": "infraharmony",
   "version": "0.1.0",
-  "private": true,
   "description": "Harmony for rhythms: rhythms combined the way tones are, by carrying the C major scale eight octaves below sound, to around 1 Hz.",
+  "license": "MIT",
   "author": "Bartosz Sułkowski (https://bsulkowski.pl)",
+  "homepage": "https://bsulkowski.pl/infraharmony",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bsulkowski/infraharmony.git"
+  },
   "type": "module",
   "exports": {
     ".": "./src/infraharmony.ts",

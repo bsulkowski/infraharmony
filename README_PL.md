@@ -30,9 +30,10 @@ Prototyp strony do Piaskownicy na [bsulkowski.pl](https://bsulkowski.pl).
 
 Każdy głos to kropka okrążająca kratkę raz na okres; dźwięk pada, gdy mija znacznik u góry.
 
-Strona ma gotowe wzory (serce, arpeggio w jednym rytmie, akord jako polirytm, kanony z jedną
-melodią w kilku tempach, fala wahadeł …) i przycisk losujący nowe, z pentatoniki i w tonie,
-i w rytmie.
+Strona ma gotowe wzory i przycisk losujący nowe, z pentatoniki i w tonie, i w rytmie. Wzory są
+w czterech grupach: interwały skali od oktawy (1 : 2) po tryton (32 : 45), każdy w swoim rytmie,
+więc im prostsza proporcja, tym szybciej głosy się schodzą; akordy i ich przewroty; kanony, czyli
+jedna melodia w kilku tempach; i kilka innych, jak serce czy fala wahadeł.
 
 Utwór można wysłać jako krótki kod, który stoi w adresie strony po `#` i w polu na stronie:
 `1j8.AAAACAVVEAqr` to C4, E4 i G4 w rytmie C−4, co trzecią część okresu, w stroju naturalnym.
@@ -57,3 +58,7 @@ npm install
 npm test        # silnik
 npm run demo    # strona, pod http://localhost:8000
 ```
+
+## Licencja
+
+[MIT](LICENSE) — Bartosz Sułkowski.

@@ -30,9 +30,11 @@ A prototype, for a page in the Sandbox of [bsulkowski.pl](https://bsulkowski.pl)
 Each voice is drawn as a dot circling its cell once a period; the note sounds as the dot passes
 the mark at the top.
 
-The page has ready-made patterns (a heartbeat, an arpeggio in one rhythm, a chord as a
-polyrhythm, canons with one tune at several speeds, a pendulum wave …) and a button for random
-ones, pentatonic in both tone and rhythm.
+The page has ready-made patterns and a button for random ones, pentatonic in both tone and
+rhythm. The patterns come in four groups: the intervals of the scale from the octave (1 : 2) to
+the tritone (32 : 45), each in its own rhythm, so the simpler the ratio the sooner the voices
+meet; chords and their inversions; canons, one tune at several speeds; and a few more, such as
+a heartbeat and a pendulum wave.
 
 A piece can be sent as a short code, kept in the page address after `#` and in a field on the
 page: `1j8.AAAACAVVEAqr` is C4, E4 and G4 in rhythm C−4, a third of a period apart, in just
@@ -58,3 +60,7 @@ npm install
 npm test        # the engine
 npm run demo    # the page, at http://localhost:8000
 ```
+
+## Licence
+
+[MIT](LICENSE) — Bartosz Sułkowski.

@@ -5,12 +5,16 @@
 // as a dot circling its cell once per period; it sounds as it passes the mark at the top.
 
 import {
-  pitchFrequency, rhythmFrequency, pitchName, rhythmName, cyclePosition,
+  pitchFrequency, rhythmFrequency, pitchName as pitchNameEn, rhythmName as rhythmNameEn, cyclePosition,
   type Tuning, type GridSize,
 } from '../src/infraharmony.ts';
 import { Player } from '../src/player.ts';
-import { EXAMPLES, randomPattern, type PatternVoice } from '../src/examples.ts';
+import { EXAMPLES, EXAMPLE_GROUPS, randomPattern, type PatternVoice } from '../src/examples.ts';
 import { codeFromUrl, decodePiece, encodePiece, type Piece } from '../src/code.ts';
+
+// Polish names the seventh step H, not B.
+const pitchName = (step: number) => pitchNameEn(step).replace(/^B/, 'H');
+const rhythmName = (step: number) => rhythmNameEn(step).replace(/^B/, 'H');
 
 const SVG = 'http://www.w3.org/2000/svg';
 const R = 36;                 // radius of the orbit, in a 100 × 100 cell
@@ -249,13 +253,13 @@ const exampleTitle = document.getElementById('example-title') as HTMLElement;
 const exampleText = document.getElementById('example-text') as HTMLElement;
 const examplePlay = document.getElementById('example-play') as HTMLButtonElement;
 
-for (const n of [8, 15]) {
+for (const g of EXAMPLE_GROUPS) {
   const group = document.createElement('optgroup');
-  group.label = `Siatka ${n} × ${n}`;
-  for (const e of EXAMPLES.filter(x => x.size === n)) {
+  group.label = g.pl;
+  for (const e of EXAMPLES.filter(x => x.group === g.id)) {
     const option = document.createElement('option');
     option.value = e.id;
-    option.textContent = e.title.pl;
+    option.textContent = e.size === 8 ? e.title.pl : `${e.title.pl} (15 × 15)`;
     group.append(option);
   }
   exampleSelect.append(group);
