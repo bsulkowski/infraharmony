@@ -16,7 +16,7 @@ test('pitches are the C major scale from middle C', () => {
   close(pitchFrequency(5, 'equal'), 440);                 // A4
   close(pitchFrequency(7, 'equal'), 2 * C4);              // C5
   close(pitchFrequency(14, 'equal'), 4 * C4);             // C6, the corner of a 15 × 15 grid
-  assert.deepEqual([0, 1, 2, 3, 4, 5, 6, 7].map(pitchName),
+  assert.deepEqual([0, 1, 2, 3, 4, 5, 6, 7].map(s => pitchName(s)),
     ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5']);
 });
 
@@ -96,7 +96,9 @@ test('in the Borderland tones run down from C2 and rhythms up from C−2, meetin
   assert.deepEqual([0, 1, 7, 14].map(s => pitchName(s, 'border')), ['C2', 'B1', 'C1', 'C0']);
   assert.deepEqual([0, 1, 7, 14].map(s => rhythmName(s, 'border')), ['C−2', 'D−2', 'C−1', 'C0']);
   // A name mapped straight over an array still reads as the infra grid.
-  assert.deepEqual([0, 1].map(pitchName), ['C4', 'D4']);
+  assert.deepEqual([0, 1].map(s => pitchName(s)), ['C4', 'D4']);
+  // Even passed straight to map, where the second argument is an index, it reads as infra.
+  assert.deepEqual([0, 1].map(pitchName as (s: number) => string), ['C4', 'D4']);
 });
 
 test('a cell is the same note as its rhythm when they are octaves apart', () => {

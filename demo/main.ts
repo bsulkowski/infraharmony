@@ -5,28 +5,33 @@
 // as a dot circling its cell once per period; it sounds as it passes the mark at the top.
 
 import {
-  pitchFrequency, rhythmFrequency, pitchName as pitchNameEn, rhythmName as rhythmNameEn, cyclePosition,
-  type Tuning, type GridSize,
+  BORDER_SIZE, pitchFrequency, rhythmFrequency, pitchName as pitchNameEn, rhythmName as rhythmNameEn,
+  cyclePosition, sameNote, type Layout, type Tuning, type GridSize,
 } from '../src/infraharmony.ts';
 import { Player } from '../src/player.ts';
 import { EXAMPLES, EXAMPLE_GROUPS, randomPattern, type PatternVoice } from '../src/examples.ts';
 import { codeFromUrl, decodePiece, encodePiece, type Piece } from '../src/code.ts';
 
 // Polish names the seventh step H, not B.
-const pitchName = (step: number) => pitchNameEn(step).replace(/^B/, 'H');
-const rhythmName = (step: number) => rhythmNameEn(step).replace(/^B/, 'H');
+const pitchName = (step: number) => pitchNameEn(step, layout).replace(/^B/, 'H');
+const rhythmName = (step: number) => rhythmNameEn(step, layout).replace(/^B/, 'H');
 
 const SVG = 'http://www.w3.org/2000/svg';
 const R = 36;                 // radius of the orbit, in a 100 × 100 cell
 const FLASH = 0.22;           // s a cell glows after a hit
 const LONG_PRESS = 550;       // ms of touch that clears a cell
+const FAST = 5;               // Hz: faster rhythms are not animated, their dots stand still
 
 const player = new Player('equal');
 let size: GridSize = 8;
+let layout: Layout = 'infra';
+type Grid = '8' | '15' | 'border';
 
 const grid = document.getElementById('grid') as HTMLDivElement;
 const status = document.getElementById('status') as HTMLSpanElement;
 const notice = document.getElementById('notice') as HTMLSpanElement;
+const pitchAxis = document.getElementById('pitch-axis') as HTMLSpanElement;
+const rhythmAxis = document.getElementById('rhythm-axis') as HTMLSpanElement;
 
 interface CellView { el: HTMLButtonElement; dots: SVGCircleElement[]; group: SVGGElement }
 const cells = new Map<string, CellView>();
@@ -45,10 +50,11 @@ function build(): void {
   grid.dataset.n = String(size);
   const tuning = player.currentTuning;
   for (let row = 0; row < size; row++) {
-    const pitch = size - 1 - row;  // high tones on top
+    // High tones on top: in the Borderland the rows already go down the scale.
+    const pitch = layout === 'border' ? row : size - 1 - row;
     const label = document.createElement('div');
     label.className = 'rowlabel';
-    label.innerHTML = `<span class="name">${pitchName(pitch)}</span><span class="hz">${fmt(pitchFrequency(pitch, tuning), 0)} Hz</span>`;
+    label.innerHTML = `<span class="name">${pitchName(pitch)}</span><span class="hz">${fmt(pitchFrequency(pitch, tuning, layout), 0)} Hz</span>`;
     grid.append(label);
     for (let rhythm = 0; rhythm < size; rhythm++) grid.append(makeCell(pitch, rhythm));
   }
@@ -58,16 +64,20 @@ function build(): void {
   for (let rhythm = 0; rhythm < size; rhythm++) {
     const label = document.createElement('div');
     label.className = 'collabel';
-    label.innerHTML = `<span class="name">${rhythmName(rhythm)}</span><span class="hz">${fmt(rhythmFrequency(rhythm, tuning), 2)} Hz</span>`;
+    label.innerHTML = `<span class="name">${rhythmName(rhythm)}</span><span class="hz">${fmt(rhythmFrequency(rhythm, tuning, layout), 2)} Hz</span>`;
     grid.append(label);
   }
+  pitchAxis.textContent = layout === 'border' ? 'C-dur w dół od C2 (65 Hz) do C0 (16 Hz)' : 'C-dur od C4 (≈ 262 Hz)';
+  rhythmAxis.textContent = layout === 'border'
+    ? 'C-dur w górę od C−2 (4,1 Hz) do C0 (16 Hz), uderzeń na sekundę'
+    : 'ta sama skala od C−4 (≈ 1,02 Hz), uderzeń na sekundę';
   refreshAll();
 }
 
 function makeCell(pitch: number, rhythm: number): HTMLButtonElement {
   const el = document.createElement('button');
   el.type = 'button';
-  el.className = 'cell' + (pitch === rhythm ? ' diag' : '');
+  el.className = 'cell' + (sameNote(pitch, rhythm, layout) ? ' diag' : '');
   el.dataset.pitch = String(pitch);
   el.dataset.rhythm = String(rhythm);
   el.style.setProperty('--h', String(hue(pitch)));
@@ -121,6 +131,7 @@ function frame(): void {
   const t = player.heardTime;
   const tuning = player.currentTuning;
   const seen = new Map<string, number>();
+  const first = new Map<string, number>();
   const flash = new Map<string, number>();
   for (const v of player.list()) {
     const k = key(v.pitch, v.rhythm);
@@ -128,10 +139,19 @@ function frame(): void {
     if (!view) continue;
     const i = seen.get(k) ?? 0;
     seen.set(k, i + 1);
-    const f = rhythmFrequency(v.rhythm, tuning);
-    const pos = cyclePosition(t, f, v.phase);
-    const since = pos / f;
-    const glow = since < FLASH ? (1 - since / FLASH) ** 2 : 0;
+    const f = rhythmFrequency(v.rhythm, tuning, layout);
+    let pos = cyclePosition(t, f, v.phase);
+    let glow: number;
+    if (f > FAST) {
+      // Too fast for the eye and for a 60 Hz screen: a steady glow, and dots that stand
+      // still, showing where each voice strikes against the first one.
+      if (!first.has(k)) first.set(k, pos);
+      pos = pos - first.get(k)! + (pos < first.get(k)! ? 1 : 0);
+      glow = 0.35;
+    } else {
+      const since = pos / f;
+      glow = since < FLASH ? (1 - since / FLASH) ** 2 : 0;
+    }
     flash.set(k, Math.max(flash.get(k) ?? 0, glow));
     const a = pos * 2 * Math.PI;
     const dot = view.dots[i];
@@ -203,7 +223,8 @@ grid.addEventListener('keydown', e => {
     clearCell(pitch, rhythm);
   } else if (e.key.startsWith('Arrow')) {
     e.preventDefault();
-    const dp = e.key === 'ArrowUp' ? 1 : e.key === 'ArrowDown' ? -1 : 0;
+    const up = layout === 'border' ? -1 : 1;
+    const dp = e.key === 'ArrowUp' ? up : e.key === 'ArrowDown' ? -up : 0;
     const dr = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
     cells.get(key(pitch + dp, rhythm + dr))?.el.focus();
   }
@@ -222,10 +243,14 @@ function press(group: string, attr: string, value: string): void {
   }
 }
 
-function setSize(n: GridSize): void {
-  size = n;
+/** Switches the grid: 8 × 8, 15 × 15, or the Borderland. A change of layout clears the voices. */
+function setGrid(g: Grid): void {
+  const next: Layout = g === 'border' ? 'border' : 'infra';
+  if (next !== layout) { player.setLayout(next); pending = null; examplePlay.hidden = true; }
+  layout = next;
+  size = g === '8' ? 8 : g === '15' ? 15 : BORDER_SIZE;
   for (const v of player.list()) if (v.pitch >= size || v.rhythm >= size) player.clear(v.pitch, v.rhythm);
-  press('size-label', 'size', String(size));
+  press('size-label', 'size', g);
   build();
 }
 
@@ -236,7 +261,7 @@ function setTuning(tuning: Tuning): void {
 }
 
 for (const b of document.querySelectorAll<HTMLButtonElement>('[data-size]')) {
-  b.addEventListener('click', () => setSize(Number(b.dataset.size) as GridSize));
+  b.addEventListener('click', () => setGrid(b.dataset.size as Grid));
 }
 
 for (const b of document.querySelectorAll<HTMLButtonElement>('[data-tuning]')) {
@@ -280,8 +305,10 @@ async function play(pattern: PatternVoice[]): Promise<void> {
 exampleSelect.addEventListener('change', async () => {
   const e = EXAMPLES.find(x => x.id === exampleSelect.value);
   if (!e) return;
-  // A larger grid when the example needs it; a smaller one is left as it is.
-  if (e.size > size) setSize(e.size);
+  // The Borderland for its own examples; otherwise a larger grid when the example needs it,
+  // and a smaller one is left as it is.
+  if (e.layout === 'border') setGrid('border');
+  else if (layout === 'border' || e.size > size) setGrid(e.size === 15 ? '15' : '8');
   if (e.tuning) setTuning(e.tuning);
   describe(e.title.pl, e.description.pl);
   await play(e.voices);
@@ -306,7 +333,7 @@ function voicesWord(n: number): string {
 }
 
 function currentPiece(): Piece {
-  return pending ?? { size, tuning: player.currentTuning, voices: player.pattern() };
+  return pending ?? { size, tuning: player.currentTuning, voices: player.pattern(), ...(layout === 'border' ? { layout } : {}) };
 }
 
 function updateCode(): void {
@@ -326,7 +353,7 @@ function say(text: string, error = false): void {
 /** Puts a piece on the grid: playing at once if sound is on, else waiting for a click. */
 async function openPiece(piece: Piece, title: string): Promise<void> {
   exampleSelect.value = '';
-  setSize(piece.size);
+  setGrid(piece.layout === 'border' ? 'border' : piece.size === 15 ? '15' : '8');
   setTuning(piece.tuning);
   const n = voicesWord(piece.voices.length);
   if (player.running) {

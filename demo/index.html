@@ -192,6 +192,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
       <div class="seg" role="group" aria-labelledby="size-label">
         <button type="button" id="size-8" data-size="8" aria-pressed="true">8 × 8</button>
         <button type="button" id="size-15" data-size="15" aria-pressed="false">15 × 15</button>
+        <button type="button" id="size-border" data-size="border" aria-pressed="false" title="15 × 15 na granicy słyszenia: tony w dół od C2, rytmy w górę od C−2, spotkanie w C0">Pogranicze</button>
       </div>
     </div>
     <div class="field">
@@ -222,11 +223,11 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
   </p>
 
   <div class="board">
-    <div class="axis-title">↑ <b>Ton</b> · C-dur od C4 (≈ 262 Hz)</div>
+    <div class="axis-title">↑ <b>Ton</b> · <span id="pitch-axis">C-dur od C4 (≈ 262 Hz)</span></div>
     <div class="scroller">
       <div class="grid" id="grid" data-n="8" aria-label="Siatka ton × rytm"></div>
     </div>
-    <div class="axis-title">→ <b>Rytm</b> · ta sama skala od C−4 (≈ 1,02 Hz), uderzeń na sekundę</div>
+    <div class="axis-title">→ <b>Rytm</b> · <span id="rhythm-axis">ta sama skala od C−4 (≈ 1,02 Hz), uderzeń na sekundę</span></div>
   </div>
 
   <section class="share" aria-labelledby="share-label">
