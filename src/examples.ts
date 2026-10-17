@@ -4,7 +4,7 @@
 // common start at which a voice first sounds. Offset 0 everywhere means everyone starts
 // together; offsets k/n spread n voices of one cell evenly over its period.
 
-import { rhythmFrequency, stepRatio, type GridSize, type Tuning } from './infraharmony.ts';
+import { rhythmFrequency, stepRatio, type GridSize, type Layout, type Tuning } from './infraharmony.ts';
 
 export interface PatternVoice {
   pitch: number;    // row: scale step from C4
@@ -12,13 +12,14 @@ export interface PatternVoice {
   offset?: number;  // fraction of its own cycle after the start, 0 if left out
 }
 
-export type ExampleGroup = 'interval' | 'chord' | 'canon' | 'other';
+export type ExampleGroup = 'interval' | 'chord' | 'canon' | 'other' | 'border';
 
 export const EXAMPLE_GROUPS: { id: ExampleGroup; pl: string; en: string }[] = [
   { id: 'interval', pl: 'Interwały', en: 'Intervals' },
   { id: 'chord', pl: 'Akordy', en: 'Chords' },
   { id: 'canon', pl: 'Kanony', en: 'Canons' },
   { id: 'other', pl: 'Inne', en: 'More' },
+  { id: 'border', pl: 'Pogranicze', en: 'Borderland' },
 ];
 
 export interface Example {
@@ -28,6 +29,7 @@ export interface Example {
   description: { pl: string; en: string };
   size: GridSize;   // the smallest grid that holds it
   tuning?: Tuning;  // the tuning it is meant for; left out if it sounds the same in both
+  layout?: Layout;  // 'infra' if left out; the Borderland is always 15 × 15
   voices: PatternVoice[];
 }
 
@@ -300,6 +302,73 @@ export const EXAMPLES: Example[] = [
     },
     size: 15,
     voices: [0, 7, 14].map(s => ({ pitch: s, rhythm: s })),
+  },
+  // The Borderland: tones from C2 (row 0) down to C0 (row 14), rhythms from C−2 (column 0) up
+  // to C0 (column 14). C1 is row 7, D1 row 6, E1 row 5, G1 row 3; C−1 is column 7, E−1 9, G−1 11.
+  {
+    id: 'border-meeting',
+    group: 'border',
+    title: { pl: 'Spotkanie', en: 'The meeting' },
+    description: {
+      pl: 'Ton C0, 16 drgań na sekundę, uderzany 16 razy na sekundę: dźwięk i rytm o tej samej częstotliwości, w rogu, gdzie obie skale się spotykają. Każde uderzenie to jedna fala tonu. Za szybkie, żeby liczyć, za wolne na czysty ton: słychać warkot, a wysokość podpowiadają dopiero wyższe harmoniczne.',
+      en: 'The tone C0, 16 vibrations a second, struck 16 times a second: a sound and a rhythm of the same frequency, in the corner where the two scales meet. Each strike is one wave of the tone. Too fast to count, too slow for a clear pitch: what you hear is a growl, and the pitch comes only from the harmonics above it.',
+    },
+    size: 15,
+    layout: 'border',
+    tuning: 'just',
+    voices: [{ pitch: 14, rhythm: 14 }],
+  },
+  {
+    id: 'border-strikes-into-tone',
+    group: 'border',
+    title: { pl: 'Uderzenia, które stają się tonem', en: 'Strikes that become a tone' },
+    description: {
+      pl: 'Ton C2 (65 Hz) w rytmie C0: cztery głosy w jednej kratce, równo rozłożone, czyli 65 uderzeń na sekundę, dokładnie tyle, ile drgań ma sam ton. Uderzenia zlewają się z tonem w jeden równy dźwięk. Usuń kratkę prawym przyciskiem i dodawaj głosy po jednym: z jednym słychać warkot 16 uderzeń na sekundę, z każdym następnym gęstnieje, aż znika w tonie.',
+      en: 'The tone C2 (65 Hz) in rhythm C0: four voices in one cell, evenly spread, so 65 strikes a second, exactly as many as the tone has vibrations. The strikes merge with the tone into one even sound. Clear the cell with the right button and add the voices one at a time: with one there is a growl of 16 strikes a second, and it thickens with each until it vanishes into the tone.',
+    },
+    size: 15,
+    layout: 'border',
+    tuning: 'just',
+    voices: [0, 1, 2, 3].map(k => ({ pitch: 0, rhythm: 14, offset: k / 4 })),
+  },
+  {
+    id: 'border-beats',
+    group: 'border',
+    title: { pl: 'Dudnienie jako rytm', en: 'Beating as a rhythm' },
+    description: {
+      pl: 'C1 i D1, 32,7 i 36,8 Hz, brzmiące razem. Dwa bliskie tony dudnią: głośność faluje z częstotliwością równą ich różnicy, 4,09 Hz. A ta różnica to C−2, pierwsza kolumna, więc dudnienie wypada na skali rytmów, równo z uderzeniami. Dwa dźwięki, każdy słyszalny, dają razem rytm.',
+      en: 'C1 and D1, 32.7 and 36.8 Hz, sounding together. Two close tones beat: the loudness swells and fades at their difference, 4.09 Hz. And that difference is C−2, the first column, so the beating lands on the scale of rhythms, in step with the strikes. Two sounds, each of them audible, make a rhythm between them.',
+    },
+    size: 15,
+    layout: 'border',
+    tuning: 'just',
+    voices: [{ pitch: 7, rhythm: 0 }, { pitch: 6, rhythm: 0 }],
+  },
+  {
+    id: 'border-beats-equal',
+    group: 'border',
+    title: { pl: 'Dudnienie, które się rozjeżdża', en: 'Beating that drifts' },
+    description: {
+      pl: 'Ta sama para C1 i D1 w stroju równomiernym. Tu cały ton jest odrobinę węższy, więc dudni wolniej, 4,00 Hz, a uderzenia w rytmie C−2 biją 4,09 razy na sekundę. Dudnienie i uderzenia rozjeżdżają się: przez kilka sekund uderzenia trafiają w ciche miejsca dudnienia i prawie giną, potem znów w głośne, i tak co 12 s. Tak słucha stroiciel fortepianu: liczy dudnienia, żeby wiedzieć, o ile interwał odstaje od czystego.',
+      en: 'The same pair, C1 and D1, in equal tuning. Here the whole tone is a little narrower, so it beats more slowly, 4.00 Hz, while the strikes in rhythm C−2 come 4.09 times a second. The beating and the strikes slide apart: for a few seconds the strikes fall into the quiet parts of the beating and almost vanish, then into the loud parts again, round and round every 12 s. This is how a piano tuner listens: counting beats to know how far an interval is from pure.',
+    },
+    size: 15,
+    layout: 'border',
+    tuning: 'equal',
+    voices: [{ pitch: 7, rhythm: 0 }, { pitch: 6, rhythm: 0 }],
+  },
+  {
+    id: 'border-chord',
+    group: 'border',
+    title: { pl: 'Akord, który dudni', en: 'A chord that beats' },
+    description: {
+      pl: 'C1, E1 i G1, akord C-dur, uderzany razem w rytmie C−2, cztery razy na sekundę. Tony mają się jak 4 : 5 : 6, więc sąsiednie różnią się o tyle samo, 8,18 Hz, i akord dudni z tą częstotliwością, dwa razy na każde uderzenie. To C−1, kolumna 7: brakujący bas akordu, dwie oktawy pod C1, który zamiast tonem staje się rytmem.',
+      en: 'C1, E1 and G1, a C major chord, struck together in rhythm C−2, four times a second. The tones stand as 4 : 5 : 6, so neighbours differ by the same 8.18 Hz, and the chord beats at that frequency, twice for every strike. That is C−1, column 7: the missing bass of the chord, two octaves below C1, which turns into a rhythm instead of a tone.',
+    },
+    size: 15,
+    layout: 'border',
+    tuning: 'just',
+    voices: [7, 5, 3].map(p => ({ pitch: p, rhythm: 0 })),
   },
 ];
 

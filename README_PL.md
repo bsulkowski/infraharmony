@@ -44,6 +44,19 @@ całkowitych (9/8, 5/4, 4/3, 3/2 …). W stroju naturalnym polirytmy powtarzają
 i G w rytmach swoich nut to 4 : 5 : 6 i schodzą się co cztery okresy C. W równomiernym się
 rozjeżdżają: tercja wraca do zgody co 25 s, kwinta po niecałych pięciu minutach.
 
+## Pogranicze
+
+Drugi układ siatki, 15 × 15, dla obszaru między dwoma światami. Tony idą w dół skali od C2
+(65 Hz) do C0 (16 Hz), w stronę najniższego dźwięku, jaki ucho słyszy; rytmy idą w górę od C−2
+(4 Hz) do C0, w stronę najszybszego pulsu, za którym jeszcze nadąża. Obie skale biegną w przeciwne
+strony i spotykają się w rogu, gdzie ton i rytm mają tę samą częstotliwość.
+
+Głos jest tu struną, która drga bez przerwy i jest uderzana na nowo w każdym takcie swojego rytmu,
+więc tony brzmiące razem dudnią. Przykłady pokazują miejsca, w których światy się przenikają: dwa
+tony o cały ton od siebie dudnią w rytmie C−2, rytmie ze skali; akord C-dur dudni w C−1, swoim
+brakującym basie; uderzenia rozłożone równo w jednej kratce zlewają się z tonem, który uderzają.
+
+
 ## Kod
 
 - `src/infraharmony.ts`: skala, rytmy i czas głosów. Czyste funkcje, bez DOM i dźwięku.
@@ -62,6 +75,7 @@ npm run demo    # strona, pod http://localhost:8000
 ## Wersje
 
 - **1.0**, październik 2026: pierwsza wersja na stronie.
+- **1.1**, październik 2026: Pogranicze z własnymi przykładami; kody jego utworów mają literę siatki `b`.
 
 Kod utworu zaczyna się od wersji swojego formatu, dziś `1`. Kod raz poprawny znaczy to samo
 w kolejnych wersjach.

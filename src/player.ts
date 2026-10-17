@@ -6,10 +6,17 @@
 //
 // The sound is synthesised: a few harmonics with a quick attack and a long decay, between
 // a marimba and a music box. No samples to load.
+//
+// In the Borderland the tones lie at 16–65 Hz, below what most speakers give out, so they get
+// many harmonics: the ear finds the pitch from them, as it does on the lowest piano keys. And
+// a voice there is one string that keeps vibrating and is struck again and again: one
+// oscillator running for as long as the voice lives, its loudness bumped up at every strike
+// and ringing down between them. Because the tone runs on unbroken, two voices held together
+// beat at the difference of their tones, whatever their strikes are doing.
 
 import {
   pitchFrequency, rhythmFrequency, hitTimes, offsetAt, phaseAt, phaseFor, retunedPhase,
-  type Tuning, type Voice,
+  type Layout, type Tuning, type Voice,
 } from './infraharmony.ts';
 import type { PatternVoice } from './examples.ts';
 
@@ -18,16 +25,23 @@ const TICK = 0.025;       // s between bookings
 const START_DELAY = 0.01; // s from a click to the first hit, so it is never booked in the past
 const DECAY = 0.9;        // s for a note to fade out
 const PEAK = 0.16;        // gain of one note at its loudest
+const RING = 0.3;         // s, time constant of a ringing note in the Borderland
+const STRIKE = 0.012;     // s, time constant of the strike falling to the ringing level
+const RING_LEVEL = 0.15;  // the ringing, as a part of the strike's peak
+const RICH_BELOW = 200;   // Hz: tones lower than this get the harmonics they need to be heard
 // A new voice is booked from a hair before its first hit: computed back from the phase,
 // that hit can come out an ulp early, and would be taken for one of the window before.
 const EPSILON = 1e-6;
 
 interface Booked { node: OscillatorNode; time: number }
-interface PlayedVoice extends Voice { booked: Set<Booked> }
+interface Tone { osc: OscillatorNode; gain: GainNode }
+interface PlayedVoice extends Voice { booked: Set<Booked>; tone?: Tone }
 
 export class Player {
   readonly ctx: AudioContext;
   private tuning: Tuning;
+  private layout: Layout = 'infra';
+  private richWaves = new Map<number, PeriodicWave>();
   private voices: PlayedVoice[] = [];
   private bookedUntil = 0;
   private master: GainNode;
@@ -84,6 +98,21 @@ export class Player {
     return this.tuning;
   }
 
+  get currentLayout(): Layout {
+    return this.layout;
+  }
+
+  /** Switches the grid between the infra layout and the Borderland; the voices are cleared. */
+  setLayout(layout: Layout): void {
+    if (layout === this.layout) return;
+    this.clearAll();
+    this.layout = layout;
+  }
+
+  private rhythmOf(step: number, tuning: Tuning = this.tuning): number {
+    return rhythmFrequency(step, tuning, this.layout);
+  }
+
   /** The voices, without their bookkeeping. */
   list(): Voice[] {
     return this.voices.map(({ pitch, rhythm, phase }) => ({ pitch, rhythm, phase }));
@@ -92,7 +121,7 @@ export class Player {
   /** Adds a voice to a cell, sounding now and then once in every period of its rhythm. */
   add(pitch: number, rhythm: number): Voice {
     const t = this.ctx.currentTime + START_DELAY;
-    const f = rhythmFrequency(rhythm, this.tuning);
+    const f = this.rhythmOf(rhythm);
     const voice: PlayedVoice = { pitch, rhythm, phase: phaseAt(t, f), booked: new Set() };
     // Book everyone up to the horizon now, so the new voice's first hit is never late,
     // and the new voice from its first hit on, so that hit is booked once.
@@ -108,7 +137,7 @@ export class Player {
   pattern(): PatternVoice[] {
     const now = this.ctx.currentTime;
     return this.voices.map(({ pitch, rhythm, phase }) =>
-      ({ pitch, rhythm, offset: offsetAt(now, rhythmFrequency(rhythm, this.tuning), phase) }));
+      ({ pitch, rhythm, offset: offsetAt(now, this.rhythmOf(rhythm), phase) }));
   }
 
   /** Replaces all voices with a pattern, starting together a moment from now. */
@@ -117,7 +146,7 @@ export class Player {
     const start = this.ctx.currentTime + START_DELAY;
     const to = Math.max(this.bookedUntil, this.ctx.currentTime + LOOKAHEAD);
     for (const { pitch, rhythm, offset = 0 } of pattern) {
-      const f = rhythmFrequency(rhythm, this.tuning);
+      const f = this.rhythmOf(rhythm);
       const voice: PlayedVoice = { pitch, rhythm, phase: phaseFor(start, f, offset), booked: new Set() };
       this.bookVoice(voice, start - EPSILON, to);
       this.voices.push(voice);
@@ -144,9 +173,15 @@ export class Player {
     if (tuning === this.tuning) return;
     const now = this.ctx.currentTime;
     for (const v of this.voices) {
-      this.cancel(v);
-      v.phase = retunedPhase(v.phase, now,
-        rhythmFrequency(v.rhythm, this.tuning), rhythmFrequency(v.rhythm, tuning));
+      if (v.tone) {
+        // The string keeps vibrating: its strikes are dropped and booked again, its tone retuned.
+        const g = v.tone.gain.gain;
+        if (g.cancelAndHoldAtTime) g.cancelAndHoldAtTime(now); else g.cancelScheduledValues(now);
+        v.tone.osc.frequency.setValueAtTime(pitchFrequency(v.pitch, tuning, this.layout), now);
+      } else {
+        this.cancel(v);
+      }
+      v.phase = retunedPhase(v.phase, now, this.rhythmOf(v.rhythm), this.rhythmOf(v.rhythm, tuning));
     }
     this.tuning = tuning;
     this.bookedUntil = now;
@@ -165,9 +200,14 @@ export class Player {
   }
 
   private bookVoice(v: PlayedVoice, from: number, to: number): void {
-    const f = rhythmFrequency(v.rhythm, this.tuning);
+    const f = this.rhythmOf(v.rhythm);
+    const pitch = pitchFrequency(v.pitch, this.tuning, this.layout);
+    if (this.layout === 'border') {
+      for (const time of hitTimes(f, v.phase, from, to)) this.strike(v, pitch, time);
+      return;
+    }
     for (const time of hitTimes(f, v.phase, from, to)) {
-      const node = this.note(pitchFrequency(v.pitch, this.tuning), time);
+      const node = this.note(pitch, time);
       const booked = { node, time };
       v.booked.add(booked);
       node.onended = () => v.booked.delete(booked);
@@ -177,6 +217,13 @@ export class Player {
   /** Stops the notes of a voice that have not started yet; the one sounding fades on. */
   private cancel(v: PlayedVoice): void {
     const now = this.ctx.currentTime;
+    if (v.tone) {
+      const g = v.tone.gain.gain;
+      if (g.cancelAndHoldAtTime) g.cancelAndHoldAtTime(now); else g.cancelScheduledValues(now);
+      g.setTargetAtTime(0, now, 0.02);
+      v.tone.osc.stop(now + 0.2);
+      v.tone = undefined;
+    }
     for (const b of v.booked) {
       if (b.time > now) {
         try { b.node.stop(); } catch { /* already stopped */ }
@@ -201,5 +248,43 @@ export class Player {
     osc.start(time);
     osc.stop(time + DECAY + 0.02);
     return osc;
+  }
+
+  /**
+   * A strike on a Borderland voice. The voice's string starts vibrating at its first strike
+   * and keeps going; each strike lifts its loudness to the peak, which falls in a few
+   * milliseconds to a ringing level and then dies away slowly until the next strike.
+   */
+  private strike(v: PlayedVoice, freq: number, time: number): void {
+    if (!v.tone) {
+      const osc = this.ctx.createOscillator();
+      osc.setPeriodicWave(freq < RICH_BELOW ? this.richWave(freq) : this.wave);
+      osc.frequency.value = freq;
+      const gain = this.ctx.createGain();
+      gain.gain.value = 0;
+      osc.connect(gain).connect(this.master);
+      osc.start(time);
+      v.tone = { osc, gain };
+    }
+    const g = v.tone.gain.gain;
+    g.setTargetAtTime(PEAK, time, 0.0015);
+    g.setTargetAtTime(PEAK * RING_LEVEL, time + 0.006, STRIKE);
+    g.setTargetAtTime(0, time + 0.006 + 4 * STRIKE, RING);
+  }
+
+  /**
+   * A tone with harmonics up to about 4 kHz, falling off as 1/n: for a low tone the
+   * fundamental is felt more than heard, and the pitch comes from the harmonics above it.
+   */
+  private richWave(freq: number): PeriodicWave {
+    const n = Math.max(6, Math.min(128, Math.floor(4000 / freq)));
+    let wave = this.richWaves.get(n);
+    if (!wave) {
+      const imag = new Float32Array(n + 1);
+      for (let k = 1; k <= n; k++) imag[k] = 1 / k;
+      wave = this.ctx.createPeriodicWave(new Float32Array(n + 1), imag);
+      this.richWaves.set(n, wave);
+    }
+    return wave;
   }
 }

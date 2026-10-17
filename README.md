@@ -45,6 +45,19 @@ ratios (9/8, 5/4, 4/3, 3/2 …). In just intonation polyrhythms repeat exactly: 
 rhythms of their own notes are 4 : 5 : 6 and line up every four periods of C. In equal temperament
 they drift: the third comes back into line every 25 s, the fifth in just under five minutes.
 
+## The Borderland
+
+A second layout of the grid, 15 × 15, for the region between the two worlds. Its tones run
+down the scale from C2 (65 Hz) to C0 (16 Hz), towards the lowest pitch an ear hears; its rhythms
+run up from C−2 (4 Hz) to C0, towards the fastest pulse it can still follow. The two scales go in
+opposite directions and meet in the corner, where a tone and a rhythm are the same frequency.
+
+Here a voice is a string that keeps vibrating and is struck again at every beat of its rhythm,
+so tones held together beat against each other. The examples show where the two worlds cross:
+two tones a whole step apart beat at C−2, a rhythm of the scale; a C major chord beats at C−1,
+its missing bass; strikes spread evenly in one cell merge into the tone they strike.
+
+
 ## Code
 
 - `src/infraharmony.ts`: the scale, the rhythms and the timing of voices. Pure functions,
@@ -64,6 +77,7 @@ npm run demo    # the page, at http://localhost:8000
 ## Versions
 
 - **1.0**, October 2026: the first version on the site.
+- **1.1**, October 2026: the Borderland, with its own examples; codes of its pieces use the grid letter `b`.
 
 A code of a piece starts with the version of its format, now `1`. A code once valid keeps its
 meaning in later versions.

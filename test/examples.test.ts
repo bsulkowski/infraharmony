@@ -5,7 +5,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { EXAMPLES, EXAMPLE_GROUPS, proportion, randomPattern } from '../src/examples.ts';
-import { cyclePosition, phaseFor, rhythmFrequency, stepRatio } from '../src/infraharmony.ts';
+import { cyclePosition, phaseFor, pitchFrequency, rhythmFrequency, stepRatio } from '../src/infraharmony.ts';
 
 const byId = (id: string) => EXAMPLES.find(e => e.id === id)!;
 
@@ -111,4 +111,34 @@ test('random patterns are pentatonic in tone and rhythm, in the slower columns, 
       assert.deepEqual(p, randomPattern(size, seeded(s)));
     }
   }
+});
+
+test('Borderland examples keep the promises of their descriptions', () => {
+  const tone = (s: number, t: 'just' | 'equal' = 'just') => pitchFrequency(s, t, 'border');
+  const beat = (s: number, t: 'just' | 'equal' = 'just') => rhythmFrequency(s, t, 'border');
+  for (const e of EXAMPLES.filter(x => x.group === 'border')) {
+    assert.equal(e.layout, 'border', e.id);
+    assert.equal(e.size, 15, e.id);
+  }
+  // The meeting: a tone and a rhythm of one frequency.
+  const m = byId('border-meeting').voices[0];
+  assert.ok(Math.abs(tone(m.pitch) - beat(m.rhythm)) < 1e-9);
+  // Strikes into a tone: four voices evenly spread strike as often as the tone vibrates.
+  const s = byId('border-strikes-into-tone').voices;
+  assert.equal(s.length, 4);
+  assert.ok(Math.abs(s.length * beat(s[0].rhythm) - tone(s[0].pitch)) < 1e-9);
+  // Beating: in just tuning C1–D1 beats exactly at C−2, the strikes' own rhythm …
+  const [a, b] = byId('border-beats').voices;
+  assert.ok(Math.abs(Math.abs(tone(a.pitch) - tone(b.pitch)) - beat(a.rhythm)) < 1e-9);
+  // … in equal tuning at 4.00 Hz, slipping against the strikes every 12 s.
+  const d = Math.abs(tone(a.pitch, 'equal') - tone(b.pitch, 'equal'));
+  assert.ok(Math.abs(d - 4.00) < 0.01, `${d}`);
+  const slip = 1 / Math.abs(d - beat(a.rhythm, 'equal'));
+  assert.ok(slip > 11.5 && slip < 12.5, `${slip}`);
+  // The chord: tones 4 : 5 : 6 an equal 8.18 Hz apart, which is C−1, twice the strikes' C−2.
+  const c = byId('border-chord').voices;
+  const tones = c.map(v => tone(v.pitch)).sort((x, y) => x - y);
+  assert.ok(Math.abs(tones[1] - tones[0] - beat(7)) < 1e-9 && Math.abs(tones[2] - tones[1] - beat(7)) < 1e-9);
+  assert.ok(c.every(v => v.rhythm === 0) && Math.abs(beat(7) - 2 * beat(0)) < 1e-9);
+  assert.ok(Math.abs(beat(7) - 8.18) < 0.01);
 });

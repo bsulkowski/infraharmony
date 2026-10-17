@@ -63,3 +63,12 @@ test('a code is read from the fragment or the p parameter of a link', () => {
   assert.equal(codeFromUrl('https://bsulkowski.pl/infraharmony?p=1jf.OOAA'), '1jf.OOAA');
   assert.equal(codeFromUrl('https://bsulkowski.pl/infraharmony#intro'), null);
 });
+
+test('a Borderland piece is written with the grid letter b and read back as one', () => {
+  const piece: Piece = { size: 15, tuning: 'just', layout: 'border', voices: [{ pitch: 14, rhythm: 14, offset: 0 }] };
+  const code = encodePiece(piece);
+  assert.equal(code, '1jb.OOAA');
+  assert.deepEqual(decodePiece(code), piece);
+  assert.equal(decodePiece('1jb.PAAA'), null);       // row 15 is off the grid
+  assert.equal(decodePiece('1jf.OOAA')!.layout, undefined);  // older codes keep their meaning
+});

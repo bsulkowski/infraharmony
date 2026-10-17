@@ -9,11 +9,17 @@
 // phase. Time is the audio clock's, in seconds. A phase is a fraction of a cycle: a voice of
 // rhythm f and phase φ sounds at every t with t·f − φ a whole number.
 //
+// The Borderland is a second layout of the grid, for the region between the two worlds: its
+// tones run down the scale from C2 (≈ 65 Hz) towards the lowest pitch an ear can hear, and its
+// rhythms run up from C−2 (≈ 4 Hz) towards the fastest pulse it can still follow. The two scales
+// go in opposite directions and meet at C0 ≈ 16 Hz, in the corner of the grid, where a tone and
+// a rhythm are the same frequency.
+//
 // Pure functions with no DOM or audio access, so the same code runs in tests and in the browser.
 
 // The version of the tool, shown discreetly under the grid; package.json's version goes with it.
 // Codes of pieces (src/code.ts) have a version of their own, FORMAT_VERSION.
-export const TOOL_VERSION = '1.0';
+export const TOOL_VERSION = '1.1';
 
 export type Tuning = 'equal' | 'just';
 
@@ -31,6 +37,23 @@ export const INFRA_OCTAVES = 8;         // rhythms start eight octaves below: C�
 export const GRID_SIZES = [8, 15] as const;  // one octave with its closing C, or two
 export type GridSize = (typeof GRID_SIZES)[number];
 
+/** Which scales the axes carry: the infra grid of 8 or 15, or the Borderland (always 15 × 15). */
+export type Layout = 'infra' | 'border';
+export const BORDER_SIZE: GridSize = 15;
+
+// For each layout and axis: the C that step 0 is, its octave in scientific pitch, and the way
+// the steps go: up the scale (1) or down it (−1).
+const AXES = {
+  infra: {
+    pitch: { base: C4, octave: PITCH_OCTAVE, way: 1 },
+    rhythm: { base: C4 / 2 ** INFRA_OCTAVES, octave: PITCH_OCTAVE - INFRA_OCTAVES, way: 1 },
+  },
+  border: {
+    pitch: { base: C4 / 4, octave: 2, way: -1 },   // C2, B1, A1 … C0
+    rhythm: { base: C4 / 64, octave: -2, way: 1 },  // C−2, D−2, E−2 … C0
+  },
+} as const;
+
 /** Frequency ratio of a scale step to the C it counts from. Step 7 is the next C, and so on. */
 export function stepRatio(step: number, tuning: Tuning): number {
   const octave = Math.floor(step / 7);
@@ -40,13 +63,15 @@ export function stepRatio(step: number, tuning: Tuning): number {
 }
 
 /** Frequency of the tone in row `step`, in Hz. */
-export function pitchFrequency(step: number, tuning: Tuning): number {
-  return C4 * stepRatio(step, tuning);
+export function pitchFrequency(step: number, tuning: Tuning, layout: Layout = 'infra'): number {
+  const a = axes(layout).pitch;
+  return a.base * stepRatio(a.way * step, tuning);
 }
 
-/** Frequency of the rhythm in column `step`, in Hz: the same step, eight octaves lower. */
-export function rhythmFrequency(step: number, tuning: Tuning): number {
-  return (C4 / 2 ** INFRA_OCTAVES) * stepRatio(step, tuning);
+/** Frequency of the rhythm in column `step`, in Hz: in the infra grid the same step, eight octaves lower. */
+export function rhythmFrequency(step: number, tuning: Tuning, layout: Layout = 'infra'): number {
+  const a = axes(layout).rhythm;
+  return a.base * stepRatio(a.way * step, tuning);
 }
 
 /** Scientific pitch name of a step counted from C of `baseOctave`: 0 → C4, 7 → C5; −4 → C−4. */
@@ -56,8 +81,22 @@ export function stepName(step: number, baseOctave: number): string {
   return `${name}${octave < 0 ? '−' + -octave : octave}`;
 }
 
-export const pitchName = (step: number) => stepName(step, PITCH_OCTAVE);
-export const rhythmName = (step: number) => stepName(step, PITCH_OCTAVE - INFRA_OCTAVES);
+// A layout that is not one (an index, when these are passed straight to Array.map) means infra.
+const axes = (layout: Layout) => AXES[layout] ?? AXES.infra;
+
+export const pitchName = (step: number, layout: Layout = 'infra') =>
+  stepName(axes(layout).pitch.way * step, axes(layout).pitch.octave);
+export const rhythmName = (step: number, layout: Layout = 'infra') =>
+  stepName(axes(layout).rhythm.way * step, axes(layout).rhythm.octave);
+
+/**
+ * Whether the tone of a cell is the same note as its rhythm, some octaves up: then the tone is
+ * a whole number of its own periods long between two strikes, and every strike finds it in step.
+ */
+export function sameNote(pitch: number, rhythm: number, layout: Layout = 'infra'): boolean {
+  const mod7 = (n: number) => ((n % 7) + 7) % 7;
+  return mod7(axes(layout).pitch.way * pitch) === mod7(axes(layout).rhythm.way * rhythm);
+}
 
 export interface Voice {
   pitch: number;   // row: scale step from C4
