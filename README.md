@@ -61,6 +61,13 @@ npm test        # the engine
 npm run demo    # the page, at http://localhost:8000
 ```
 
+## Versions
+
+- **1.0**, October 2026: the first version on the site.
+
+A code of a piece starts with the version of its format, now `1`. A code once valid keeps its
+meaning in later versions.
+
 ## Licence
 
 [MIT](LICENSE) — Bartosz Sułkowski.

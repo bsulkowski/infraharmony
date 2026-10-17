@@ -59,6 +59,13 @@ npm test        # silnik
 npm run demo    # strona, pod http://localhost:8000
 ```
 
+## Wersje
+
+- **1.0**, październik 2026: pierwsza wersja na stronie.
+
+Kod utworu zaczyna się od wersji swojego formatu, dziś `1`. Kod raz poprawny znaczy to samo
+w kolejnych wersjach.
+
 ## Licencja
 
 [MIT](LICENSE) — Bartosz Sułkowski.

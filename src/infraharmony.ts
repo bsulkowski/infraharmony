@@ -11,6 +11,10 @@
 //
 // Pure functions with no DOM or audio access, so the same code runs in tests and in the browser.
 
+// The version of the tool, shown discreetly under the grid; package.json's version goes with it.
+// Codes of pieces (src/code.ts) have a version of their own, FORMAT_VERSION.
+export const TOOL_VERSION = '1.0';
+
 export type Tuning = 'equal' | 'just';
 
 export const NOTE_NAMES = ['C', 'D', 'E', 'F', 'G', 'A', 'B'] as const;

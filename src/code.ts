@@ -22,7 +22,9 @@ export interface Piece {
 }
 
 const DIGITS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
-const VERSION = '1';
+/** The version of the code format, its first character. A code once valid keeps its meaning. */
+export const FORMAT_VERSION = 1;
+const VERSION = String(FORMAT_VERSION);
 const STEPS = 64 * 64;  // offset resolution
 
 export function encodePiece(piece: Piece): string {
